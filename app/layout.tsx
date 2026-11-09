@@ -15,14 +15,17 @@ const bodyFont = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "TDM GLUZ - Trương Duy Minh, Junior Business Analyst",
+  metadataBase: new URL("https://tdm-gluz.online"),
+  title: "TDM GLUZ | Aspiring IT Business Analyst",
   description:
-    "Portfolio cá nhân của Trương Duy Minh, định hướng Junior Business Analyst.",
+    "The portfolio of TDM GLUZ, an aspiring IT Business Analyst focused on requirements, process modeling, and technology-driven solutions.",
   openGraph: {
-    title: "TDM GLUZ - Trương Duy Minh, Junior Business Analyst",
+    title: "TDM GLUZ | Aspiring IT Business Analyst",
     description:
-      "Portfolio cá nhân của Trương Duy Minh, định hướng Junior Business Analyst.",
-    locale: "vi_VN",
+      "The portfolio of TDM GLUZ, an aspiring IT Business Analyst focused on requirements, process modeling, and technology-driven solutions.",
+    url: "https://tdm-gluz.online",
+    siteName: "TDM GLUZ",
+    locale: "en_US",
     type: "website",
   },
 };
@@ -30,7 +33,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="vi"
+      lang="en"
       className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

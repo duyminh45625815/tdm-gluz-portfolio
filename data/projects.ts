@@ -1,28 +1,33 @@
 export type Project = {
   slug: string;
   title: string;
-  period: string;
   description: string;
-  documents: string[];
-  tools?: string[];
+  deliverables: string[];
 };
 
 export const projects: Project[] = [
   {
-    slug: "gym-management",
-    title: "Gym Business Management System",
-    period: "Tháng 12/2023 - 3/2024",
+    slug: "cinevie-plus",
+    title: "CineVie+",
     description:
-      "Dự án đầu tiên của mình: phân tích yêu cầu cho hệ thống quản lý phòng gym.",
-    documents: ["BRD", "FRD", "Use Case"],
+      "An academic project focused on analyzing requirements and designing an online cinema ticket booking solution.",
+    deliverables: [
+      "BRD",
+      "FRD",
+      "User Stories",
+      "UML Diagrams",
+      "Figma Wireframes",
+    ],
   },
   {
-    slug: "cinevie-plus",
-    title: "CINEVIE+ Online Ticketing",
-    period: "Tháng 5 - 7/2025",
+    slug: "gym-management",
+    title: "Gym Management System",
     description:
-      "Phân tích yêu cầu cho hệ thống bán vé xem phim trực tuyến.",
-    documents: ["SRS", "Use Case", "User Story", "BPMN/UML"],
-    tools: ["Draw.io", "Figma (basic)", "Postman", "SQL Server"],
+      "An academic project focused on analyzing business workflows and system requirements for gym management.",
+    deliverables: [
+      "Requirements Documentation",
+      "Use Cases",
+      "Process Modeling",
+    ],
   },
 ];

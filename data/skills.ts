@@ -1,32 +1,32 @@
 export type SkillGroup = {
-  category: string;
-  skills: string[];
+  title: string;
+  items: string[];
 };
 
 export const skills: SkillGroup[] = [
   {
-    category: "Phân tích nghiệp vụ",
-    skills: [
+    title: "Requirement Analysis",
+    items: [
       "BRD",
       "FRD",
-      "SRS",
-      "Use Case",
-      "User Story",
-      "Acceptance Criteria",
-      "BPMN",
-      "UML",
+      "User Stories",
+      "Use Cases",
     ],
   },
   {
-    category: "Dữ liệu",
-    skills: [
-      "SQL (SELECT, JOIN, GROUP BY, WHERE, procedure và trigger cơ bản)",
-      "ERD",
-      "SQL Server",
+    title: "Process Modeling",
+    items: [
+      "Activity Diagram",
+      "Sequence Diagram",
+      "Business Process Analysis",
     ],
   },
   {
-    category: "Công cụ",
-    skills: ["Draw.io", "Figma (cơ bản)", "Postman", "Odoo ERP"],
+    title: "Data & Technology",
+    items: ["SQL Server", "Software Development Fundamentals"],
+  },
+  {
+    title: "Design & Testing",
+    items: ["Figma", "Wireframing", "Manual Testing", "Test Case Design"],
   },
 ];
