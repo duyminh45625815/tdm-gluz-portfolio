@@ -1,5 +1,14 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Languages
+
+The homepage supports English and Vietnamese. Translations are maintained in
+`locales/en.ts` and `locales/vi.ts`; keep the same keys and structure in both
+files when adding or editing copy. The initial language follows the `locale`
+cookie, then the `x-vercel-ip-country` request header, and defaults to Vietnamese.
+The navigation language switcher saves the selected language in the `locale`
+cookie for one year.
+
 ## Getting Started
 
 First, run the development server:

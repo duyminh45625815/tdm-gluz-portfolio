@@ -1,13 +1,8 @@
-import { projects } from "@/data/projects";
-import { skills } from "@/data/skills";
+"use client";
+
+import { useLanguage } from "./components/LanguageProvider";
 import SiteHeader from "./components/SiteHeader";
 
-const highlights = [
-  "Business Analysis",
-  "Requirement Engineering",
-  "Process Modeling",
-  "Technology Solutions",
-];
 const currentYear = new Date().getFullYear();
 
 const skillIcons = [
@@ -38,7 +33,13 @@ function ArrowIcon() {
   );
 }
 
-function ProjectArtwork({ index }: { index: number }) {
+function ProjectArtwork({
+  index,
+  caption,
+}: {
+  index: number;
+  caption: string;
+}) {
   if (index === 0) {
     return (
       <div className="project-art project-art-cinema" aria-hidden="true">
@@ -50,7 +51,7 @@ function ProjectArtwork({ index }: { index: number }) {
           <span className="art-screen-line art-screen-line-short" />
           <span className="art-screen-button" />
         </div>
-        <span className="art-caption">CINEMA / BOOKING</span>
+        <span className="art-caption">{caption}</span>
       </div>
     );
   }
@@ -68,16 +69,18 @@ function ProjectArtwork({ index }: { index: number }) {
           <span className="gym-center">GYM</span>
         </div>
       </div>
-      <span className="art-caption">MEMBERS / OPERATIONS</span>
+      <span className="art-caption">{caption}</span>
     </div>
   );
 }
 
 export default function Home() {
+  const { translations: t } = useLanguage();
+
   return (
     <>
       <a className="skip-link" href="#main-content">
-        Skip to content
+        {t.skipToContent}
       </a>
       <SiteHeader />
 
@@ -91,35 +94,26 @@ export default function Home() {
             <div className="hero-copy">
               <p className="eyebrow">
                 <span className="status-dot" />
-                Hello, welcome to my portfolio
+                {t.hero.welcome}
               </p>
               <h1 id="hero-heading">
-                I&apos;m <span className="gradient-text">GLUZ.</span>
+                {t.hero.intro} <span className="gradient-text">GLUZ.</span>
               </h1>
-              <p className="hero-role">Aspiring IT Business Analyst</p>
-              <p className="hero-statement">
-                Turning business needs into meaningful digital solutions.
-              </p>
-              <p className="hero-description">
-                I&apos;m an IT graduate interested in Business Analysis,
-                requirement engineering, and technology-driven solutions. I
-                enjoy understanding business problems and translating
-                requirements into structured solutions.
-              </p>
+              <p className="hero-role">{t.hero.role}</p>
+              <p className="hero-statement">{t.hero.statement}</p>
+              <p className="hero-description">{t.hero.description}</p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#projects">
-                  Explore My Projects <ArrowIcon />
+                  {t.hero.projectsButton} <ArrowIcon />
                 </a>
                 <a className="button button-secondary" href="#about">
-                  About Me
+                  {t.hero.aboutButton}
                 </a>
               </div>
-              <p className="hero-footnote">
-                Software Engineering · HUFLIT · Vietnam
-              </p>
+              <p className="hero-footnote">{t.hero.footnote}</p>
             </div>
 
-            <div className="hero-visual" aria-label="GLUZ personal brand artwork">
+            <div className="hero-visual" aria-label={t.hero.visualLabel}>
               <div className="visual-glow" />
               <div className="visual-grid" />
               <div className="visual-orbit visual-orbit-a" />
@@ -127,28 +121,31 @@ export default function Home() {
               <div className="visual-cross visual-cross-a" />
               <div className="visual-cross visual-cross-b" />
               <div className="visual-monogram">
-                <span className="monogram-kicker">BUSINESS × TECHNOLOGY</span>
-                <span className="monogram-name">GLUZ</span>
+                <span className="monogram-kicker">{t.hero.visualKicker}</span>
+                <span className="monogram-name">{t.hero.visualName}</span>
                 <span className="monogram-rule" />
                 <span className="monogram-caption">
-                  Understand the need.
+                  {t.hero.visualCaptionFirst}
                   <br />
-                  Shape the solution.
+                  {t.hero.visualCaptionSecond}
                 </span>
               </div>
-              <span className="visual-coordinate">10°46&apos; N — 106°40&apos; E</span>
-              <span className="visual-index">TDM / 01</span>
+              <span className="visual-coordinate">{t.hero.visualCoordinate}</span>
+              <span className="visual-index">{t.hero.visualIndex}</span>
             </div>
           </div>
           <div className="hero-bottom-line page-shell">
-            <span>Curious by nature</span>
-            <span>Structured by design</span>
+            <span>{t.hero.bottomLineFirst}</span>
+            <span>{t.hero.bottomLineSecond}</span>
           </div>
         </section>
 
-        <section className="highlights-section" aria-label="Areas of interest">
+        <section
+          className="highlights-section"
+          aria-label={t.highlights.ariaLabel}
+        >
           <div className="page-shell highlights-row">
-            {highlights.map((highlight, index) => (
+            {t.highlights.items.map((highlight, index) => (
               <div className="highlight-item" key={highlight}>
                 <span className="highlight-index">0{index + 1}</span>
                 <span>{highlight}</span>
@@ -165,29 +162,24 @@ export default function Home() {
           <div className="page-shell about-grid">
             <div className="section-marker">
               <span className="marker-line" />
-              <span>About me</span>
+              <span>{t.about.sectionLabel}</span>
             </div>
             <div className="about-content">
               <h2 id="about-heading">
-                Understanding business.
+                {t.about.headingFirst}
                 <br />
-                <span className="text-muted">Connecting technology.</span>
+                <span className="text-muted">{t.about.headingSecond}</span>
               </h2>
-              <p>
-                I believe great digital solutions start with understanding the
-                right problems. My focus is on analyzing business needs,
-                organizing requirements, and connecting business expectations
-                with technical implementation.
-              </p>
+              <p>{t.about.description}</p>
               <a className="text-link" href="#skills">
-                More About Me <ArrowIcon />
+                {t.about.moreLink} <ArrowIcon />
               </a>
             </div>
             <div className="about-aside" aria-hidden="true">
               <span className="aside-symbol">↗</span>
-              <span>Clarity is a feature.</span>
+              <span>{t.about.asideFirst}</span>
               <span className="aside-rule" />
-              <span>Build from understanding.</span>
+              <span>{t.about.asideSecond}</span>
             </div>
           </div>
         </section>
@@ -202,29 +194,40 @@ export default function Home() {
               <div>
                 <div className="section-marker">
                   <span className="marker-line" />
-                  <span>Selected work</span>
+                  <span>{t.projects.sectionLabel}</span>
                 </div>
-                <h2 id="projects-heading">Turning ideas into solutions.</h2>
+                <h2 id="projects-heading">{t.projects.heading}</h2>
               </div>
-              <p className="section-intro">
-                Academic projects focused on understanding requirements and
-                shaping useful systems.
-              </p>
+              <p className="section-intro">{t.projects.intro}</p>
             </div>
             <div className="project-list">
-              {projects.map((project, index) => (
+              {t.projects.items.map((project, index) => (
                 <article
                   className="project-card"
                   id={`project-${project.slug}`}
                   key={project.slug}
                 >
-                  <ProjectArtwork index={index} />
+                  <ProjectArtwork
+                    index={index}
+                    caption={
+                      index === 0
+                        ? t.projects.cinemaArtwork
+                        : t.projects.gymArtwork
+                    }
+                  />
                   <div className="project-content">
                     <div className="project-meta">
-                      <span className="category-badge">Business Analysis</span>
-                      <span className="academic-label">Academic project</span>
+                      <span className="category-badge">
+                        {t.projects.category}
+                      </span>
+                      <span className="academic-label">
+                        {t.projects.academicLabel}
+                      </span>
                     </div>
                     <h3>{project.title}</h3>
+                    {project.subtitle.length > 0 && (
+                      <p className="project-subtitle">{project.subtitle}</p>
+                    )}
                     <p className="project-description">
                       {project.description}
                     </p>
@@ -233,7 +236,7 @@ export default function Home() {
                       id={`deliverables-${project.slug}`}
                     >
                       <span className="deliverables-label">
-                        Selected deliverables
+                        {t.projects.deliverablesLabel}
                       </span>
                       <ul>
                         {project.deliverables.map((deliverable) => (
@@ -244,9 +247,12 @@ export default function Home() {
                     <a
                       className="text-link project-link"
                       href={`#deliverables-${project.slug}`}
-                      aria-label={`View ${project.title} project deliverables`}
+                      aria-label={t.projects.viewProjectAriaLabel.replace(
+                        "{title}",
+                        project.title,
+                      )}
                     >
-                      View Project <ArrowIcon />
+                      {t.projects.viewProject} <ArrowIcon />
                     </a>
                   </div>
                   <span className="project-number" aria-hidden="true">
@@ -266,17 +272,14 @@ export default function Home() {
           <div className="page-shell">
             <div className="section-marker">
               <span className="marker-line" />
-              <span>Capabilities</span>
+              <span>{t.skills.sectionLabel}</span>
             </div>
             <div className="section-heading-row skills-heading-row">
-              <h2 id="skills-heading">What I bring to the table.</h2>
-              <p className="section-intro">
-                A foundation across analysis, process, data, and the details
-                that make a product easier to use.
-              </p>
+              <h2 id="skills-heading">{t.skills.heading}</h2>
+              <p className="section-intro">{t.skills.intro}</p>
             </div>
             <div className="skills-grid">
-              {skills.map((group, index) => (
+              {t.skills.groups.map((group, index) => (
                 <article className="skill-card" key={group.title}>
                   <div className="skill-card-top">
                     <span className="skill-icon">{skillIcons[index]}</span>
@@ -303,16 +306,17 @@ export default function Home() {
             <div>
               <div className="section-marker section-marker-light">
                 <span className="marker-line" />
-                <span>Start a conversation</span>
+                <span>{t.contact.sectionLabel}</span>
               </div>
-              <h2 id="contact-heading">Let&apos;s connect.</h2>
-              <p>
-                Open to opportunities, collaboration, and continuous learning.
-              </p>
+              <h2 id="contact-heading">{t.contact.heading}</h2>
+              <p>{t.contact.description}</p>
             </div>
-            <div className="contact-actions" aria-label="Contact links">
+            <div
+              className="contact-actions"
+              aria-label={t.contact.linksAriaLabel}
+            >
               <a className="button button-contact" href="mailto:EMAIL_HERE">
-                Email <ArrowIcon />
+                {t.contact.email} <ArrowIcon />
               </a>
               <a
                 className="button button-contact-quiet"
@@ -320,7 +324,7 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                LinkedIn <ArrowIcon />
+                {t.contact.linkedin} <ArrowIcon />
               </a>
               <a
                 className="button button-contact-quiet"
@@ -328,7 +332,7 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                GitHub <ArrowIcon />
+                {t.contact.github} <ArrowIcon />
               </a>
             </div>
             <div className="contact-orb" aria-hidden="true" />
@@ -338,15 +342,19 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="page-shell footer-inner">
-          <a className="footer-brand" href="#home" aria-label="TDM GLUZ, back to top">
+          <a
+            className="footer-brand"
+            href="#home"
+            aria-label={t.footer.brandHomeAriaLabel}
+          >
             TDM <span>GLUZ</span>
             <i aria-hidden="true" />
           </a>
-          <p>Think. Analyze. Create.</p>
+          <p>{t.footer.motto}</p>
           <div className="footer-meta">
             <span>© {currentYear} TDM GLUZ</span>
             <a href="#home">
-              Back to top <span aria-hidden="true">↑</span>
+              {t.footer.backToTop} <span aria-hidden="true">↑</span>
             </a>
           </div>
         </div>

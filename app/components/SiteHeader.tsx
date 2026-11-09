@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "./LanguageProvider";
 
 const navigation = [
-  { label: "Home", href: "#home" },
-  { label: "About Me", href: "#about" },
-  { label: "Project", href: "#projects" },
-  { label: "Skill", href: "#skills" },
-  { label: "Contact", href: "#contact" },
-];
+  { key: "home", href: "#home" },
+  { key: "about", href: "#about" },
+  { key: "projects", href: "#projects" },
+  { key: "skills", href: "#skills" },
+  { key: "contact", href: "#contact" },
+] as const;
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const { locale, setLocale, translations } = useLanguage();
 
   useEffect(() => {
     const sections = navigation
@@ -58,7 +60,7 @@ export default function SiteHeader() {
         <a
           className="brand"
           href="#home"
-          aria-label="TDM GLUZ, home"
+          aria-label={translations.nav.brandHomeAriaLabel}
           onClick={() => setMenuOpen(false)}
         >
           TDM <span>GLUZ</span>
@@ -67,7 +69,11 @@ export default function SiteHeader() {
         <button
           type="button"
           className="menu-toggle"
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-label={
+            menuOpen
+              ? translations.nav.closeMenu
+              : translations.nav.openMenu
+          }
           aria-controls="primary-navigation"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
@@ -78,9 +84,9 @@ export default function SiteHeader() {
         <nav
           id="primary-navigation"
           className={`primary-navigation${menuOpen ? " is-open" : ""}`}
-          aria-label="Main navigation"
+          aria-label={translations.nav.mainAriaLabel}
         >
-          {navigation.map(({ label, href }) => {
+          {navigation.map(({ key, href }) => {
             const sectionId = href.slice(1);
             return (
               <a
@@ -90,11 +96,36 @@ export default function SiteHeader() {
                 key={href}
                 onClick={() => setMenuOpen(false)}
               >
-                {label}
+                {translations.nav[key]}
                 {sectionId === "contact" && <span aria-hidden="true">↗</span>}
               </a>
             );
           })}
+          <div
+            className="language-switcher"
+            role="group"
+            aria-label={translations.nav.languageSwitcherLabel}
+          >
+            <button
+              type="button"
+              className={locale === "en" ? "is-selected" : ""}
+              aria-label={translations.nav.selectEnglish}
+              aria-pressed={locale === "en"}
+              onClick={() => setLocale("en")}
+            >
+              EN
+            </button>
+            <span aria-hidden="true">|</span>
+            <button
+              type="button"
+              className={locale === "vi" ? "is-selected" : ""}
+              aria-label={translations.nav.selectVietnamese}
+              aria-pressed={locale === "vi"}
+              onClick={() => setLocale("vi")}
+            >
+              VI
+            </button>
+          </div>
         </nav>
       </div>
     </header>

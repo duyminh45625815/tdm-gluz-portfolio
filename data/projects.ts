@@ -1,6 +1,7 @@
 export type Project = {
   slug: string;
   title: string;
+  subtitle?: string;
   description: string;
   deliverables: string[];
 };
@@ -9,6 +10,7 @@ export const projects: Project[] = [
   {
     slug: "cinevie-plus",
     title: "CineVie+",
+    subtitle: "Online Cinema Ticket Booking System",
     description:
       "An academic project focused on analyzing requirements and designing an online cinema ticket booking solution.",
     deliverables: [

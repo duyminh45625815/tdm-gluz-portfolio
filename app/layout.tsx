@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Bricolage_Grotesque } from "next/font/google";
+import { getRequestLocale } from "@/lib/locale";
+import { translations } from "@/locales";
+import { LanguageProvider } from "./components/LanguageProvider";
 import "./globals.css";
+
+export const instant = false;
 
 const headingFont = Bricolage_Grotesque({
   variable: "--font-heading",
@@ -14,29 +19,36 @@ const bodyFont = Be_Vietnam_Pro({
   weight: ["400", "500", "600"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://tdm-gluz.online"),
-  title: "TDM GLUZ | Aspiring IT Business Analyst",
-  description:
-    "The portfolio of TDM GLUZ, an aspiring IT Business Analyst focused on requirements, process modeling, and technology-driven solutions.",
-  openGraph: {
-    title: "TDM GLUZ | Aspiring IT Business Analyst",
-    description:
-      "The portfolio of TDM GLUZ, an aspiring IT Business Analyst focused on requirements, process modeling, and technology-driven solutions.",
-    url: "https://tdm-gluz.online",
-    siteName: "TDM GLUZ",
-    locale: "en_US",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const content = translations[locale].metadata;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+  return {
+    metadataBase: new URL("https://tdm-gluz.online"),
+    title: content.title,
+    description: content.description,
+    openGraph: {
+      title: content.title,
+      description: content.description,
+      url: "https://tdm-gluz.online",
+      siteName: "TDM GLUZ",
+      locale: locale === "vi" ? "vi_VN" : "en_US",
+      type: "website",
+    },
+  };
+}
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getRequestLocale();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <LanguageProvider initialLocale={locale}>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

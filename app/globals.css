@@ -209,6 +209,33 @@ h3 {
   display: none;
 }
 
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #66616d;
+  font-size: 12px;
+}
+
+.language-switcher button {
+  padding: 8px 3px;
+  border: 0;
+  background: transparent;
+  color: #a1a1aa;
+  font: inherit;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.language-switcher button:hover,
+.language-switcher button.is-selected {
+  color: #e994ea;
+}
+
+.language-switcher button.is-selected {
+  font-weight: 600;
+}
+
 .menu-toggle {
   display: none;
 }
@@ -892,6 +919,12 @@ h3 {
   line-height: 1.25;
 }
 
+.project-subtitle {
+  margin: -4px 0 8px;
+  color: #ded8e5;
+  font-size: 12px;
+}
+
 .project-description {
   max-width: 600px;
   margin-bottom: 20px;
@@ -1286,6 +1319,12 @@ h3 {
     margin-top: 12px;
     padding: 0 14px;
     border: 1px solid rgba(236, 43, 190, 0.4);
+  }
+
+  .language-switcher {
+    align-self: flex-start;
+    margin-top: 10px;
+    padding-left: 3px;
   }
 
   .hero-section {
