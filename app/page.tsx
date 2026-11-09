@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "./components/LanguageProvider";
+import ProfilePortrait from "./components/ProfilePortrait";
 import SiteHeader from "./components/SiteHeader";
 
 const currentYear = new Date().getFullYear();
@@ -92,51 +93,52 @@ export default function Home() {
         >
           <div className="page-shell hero-grid">
             <div className="hero-copy">
-              <p className="eyebrow">
+            <p className="eyebrow hero-eyebrow">
                 <span className="status-dot" />
                 {t.hero.welcome}
               </p>
-              <h1 id="hero-heading">
-                {t.hero.intro} <span className="gradient-text">GLUZ.</span>
-              </h1>
-              <p className="hero-role">{t.hero.role}</p>
-              <p className="hero-statement">{t.hero.statement}</p>
-              <p className="hero-description">{t.hero.description}</p>
-              <div className="hero-actions">
-                <a className="button button-primary" href="#projects">
-                  {t.hero.projectsButton} <ArrowIcon />
-                </a>
-                <a className="button button-secondary" href="#about">
-                  {t.hero.aboutButton}
-                </a>
-              </div>
-              <p className="hero-footnote">{t.hero.footnote}</p>
+            <p className="hero-portfolio-label">{t.hero.portfolioLabel}</p>
+            <h1 id="hero-heading" className="hero-name">
+              <span>TRUONG DUY</span>
+              <span className="gradient-text">MINH</span>
+            </h1>
+            <p className="hero-role">
+              <span className="hero-role-mark" aria-hidden="true" />
+              {t.hero.role}
+            </p>
+            <p className="hero-statement">{t.hero.statement}</p>
+            <p className="hero-description">{t.hero.description}</p>
+            <div className="hero-actions">
+              <a className="button button-primary" href="#projects">
+                {t.hero.projectsButton} <ArrowIcon />
+              </a>
+              <a className="button button-secondary" href="#contact">
+                {t.hero.aboutButton} <ArrowIcon />
+              </a>
             </div>
+            <p className="hero-footnote">
+              <span className="hero-footnote-line" aria-hidden="true" />
+              {t.hero.footnote}
+            </p>
+          </div>
 
-            <div className="hero-visual" aria-label={t.hero.visualLabel}>
-              <div className="visual-glow" />
-              <div className="visual-grid" />
-              <div className="visual-orbit visual-orbit-a" />
-              <div className="visual-orbit visual-orbit-b" />
-              <div className="visual-cross visual-cross-a" />
-              <div className="visual-cross visual-cross-b" />
-              <div className="visual-monogram">
-                <span className="monogram-kicker">{t.hero.visualKicker}</span>
-                <span className="monogram-name">{t.hero.visualName}</span>
-                <span className="monogram-rule" />
-                <span className="monogram-caption">
-                  {t.hero.visualCaptionFirst}
-                  <br />
-                  {t.hero.visualCaptionSecond}
-                </span>
-              </div>
-              <span className="visual-coordinate">{t.hero.visualCoordinate}</span>
-              <span className="visual-index">{t.hero.visualIndex}</span>
+          <ProfilePortrait
+            label={t.hero.portraitLabel}
+            placeholder={t.hero.portraitPlaceholder}
+            caption={t.hero.portraitCaption}
+          />
+          </div>
+          <div className="hero-lower page-shell">
+          <div className="hero-marquee" aria-hidden="true">
+            <div className="hero-marquee-track" aria-hidden="true">
+              <span>{t.hero.marquee}</span>
+              <span>{t.hero.marquee}</span>
             </div>
           </div>
-          <div className="hero-bottom-line page-shell">
-            <span>{t.hero.bottomLineFirst}</span>
-            <span>{t.hero.bottomLineSecond}</span>
+          <a className="hero-scroll" href="#about">
+            <span className="hero-scroll-line" aria-hidden="true" />
+            {t.hero.scrollHint}
+          </a>
           </div>
         </section>
 
