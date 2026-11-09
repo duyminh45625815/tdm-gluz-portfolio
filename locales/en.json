@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "title": "TDM GLUZ | Aspiring IT Business Analyst",
+    "description": "The portfolio of TDM GLUZ, an aspiring IT Business Analyst focused on requirements, process modeling, and technology-driven solutions."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About Me",
+    "projects": "Project",
+    "skills": "Skill",
+    "contact": "Contact",
+    "mainAriaLabel": "Main navigation",
+    "brandHomeAriaLabel": "TDM GLUZ, home",
+    "languageSwitcherLabel": "Choose language",
+    "selectChinese": "Select Chinese",
+    "selectEnglish": "Select English",
+    "selectVietnamese": "Select Vietnamese",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu"
+  },
+  "skipToContent": "Skip to content",
+  "hero": {
+    "welcome": "Hello, welcome to my portfolio",
+    "intro": "I'm",
+    "role": "Aspiring IT Business Analyst",
+    "statement": "Turning business needs into meaningful digital solutions.",
+    "description": "I'm an IT graduate interested in Business Analysis, requirement engineering, and technology-driven solutions. I enjoy understanding business problems and translating requirements into structured solutions.",
+    "projectsButton": "Explore My Projects",
+    "aboutButton": "About Me",
+    "footnote": "Software Engineering · HUFLIT · Vietnam",
+    "visualLabel": "GLUZ personal brand artwork",
+    "visualKicker": "BUSINESS × TECHNOLOGY",
+    "visualName": "GLUZ",
+    "visualCaptionFirst": "Understand the need.",
+    "visualCaptionSecond": "Shape the solution.",
+    "visualCoordinate": "ANALYSIS / SYSTEMS",
+    "visualIndex": "TDM / 01",
+    "bottomLineFirst": "Curious by nature",
+    "bottomLineSecond": "Structured by design"
+  },
+  "highlights": {
+    "ariaLabel": "Areas of interest",
+    "items": [
+      "Business Analysis",
+      "Requirement Engineering",
+      "Process Modeling",
+      "Technology Solutions"
+    ]
+  },
+  "about": {
+    "sectionLabel": "About me",
+    "headingFirst": "Understanding business.",
+    "headingSecond": "Connecting technology.",
+    "description": "I believe great digital solutions start with understanding the right problems. My focus is on analyzing business needs, organizing requirements, and connecting business expectations with technical implementation.",
+    "moreLink": "More About Me",
+    "asideFirst": "Clarity is a feature.",
+    "asideSecond": "Build from understanding."
+  },
+  "projects": {
+    "sectionLabel": "Selected work",
+    "heading": "Turning ideas into solutions.",
+    "intro": "Academic projects focused on understanding requirements and shaping useful systems.",
+    "category": "Business Analysis",
+    "academicLabel": "Academic project",
+    "deliverablesLabel": "Selected deliverables",
+    "viewProject": "View Project",
+    "viewProjectAriaLabel": "View {title} project deliverables",
+    "cinemaArtwork": "CINEMA / BOOKING",
+    "gymArtwork": "MEMBERS / OPERATIONS",
+    "items": [
+      {
+        "slug": "cinevie-plus",
+        "title": "CineVie+",
+        "subtitle": "Online Cinema Ticket Booking System",
+        "description": "An academic project focused on analyzing requirements and designing an online cinema ticket booking solution.",
+        "deliverables": [
+          "BRD",
+          "FRD",
+          "User Stories",
+          "UML Diagrams",
+          "Figma Wireframes"
+        ]
+      },
+      {
+        "slug": "gym-management",
+        "title": "Gym Management System",
+        "subtitle": "",
+        "description": "An academic project focused on analyzing business workflows and system requirements for gym management.",
+        "deliverables": [
+          "Requirements Documentation",
+          "Use Cases",
+          "Process Modeling"
+        ]
+      }
+    ]
+  },
+  "skills": {
+    "sectionLabel": "Capabilities",
+    "heading": "What I bring to the table.",
+    "intro": "A foundation across analysis, process, data, and the details that make a product easier to use.",
+    "groups": [
+      {
+        "title": "Requirement Analysis",
+        "items": ["BRD", "FRD", "User Stories", "Use Cases"]
+      },
+      {
+        "title": "Process Modeling",
+        "items": [
+          "Activity Diagram",
+          "Sequence Diagram",
+          "Business Process Analysis"
+        ]
+      },
+      {
+        "title": "Data & Technology",
+        "items": ["SQL Server", "Software Development Fundamentals"]
+      },
+      {
+        "title": "Design & Testing",
+        "items": ["Figma", "Wireframing", "Manual Testing", "Test Case Design"]
+      }
+    ]
+  },
+  "contact": {
+    "sectionLabel": "Start a conversation",
+    "heading": "Let's connect.",
+    "description": "Open to opportunities, collaboration, and continuous learning.",
+    "linksAriaLabel": "Contact links",
+    "email": "Email",
+    "linkedin": "LinkedIn",
+    "github": "GitHub"
+  },
+  "footer": {
+    "brandHomeAriaLabel": "TDM GLUZ, back to top",
+    "motto": "Think. Analyze. Create.",
+    "backToTop": "Back to top"
+  }
+}

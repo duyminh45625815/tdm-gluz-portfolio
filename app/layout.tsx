@@ -32,7 +32,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description: content.description,
       url: "https://tdm-gluz.online",
       siteName: "TDM GLUZ",
-      locale: locale === "vi" ? "vi_VN" : "en_US",
+      locale:
+        locale === "vi" ? "vi_VN" : locale === "zh-CN" ? "zh_CN" : "en_US",
       type: "website",
     },
   };

@@ -11,6 +11,12 @@ const navigation = [
   { key: "contact", href: "#contact" },
 ] as const;
 
+const languageOptions = [
+  { locale: "zh-CN", label: "CN", ariaLabelKey: "selectChinese" },
+  { locale: "en", label: "EN", ariaLabelKey: "selectEnglish" },
+  { locale: "vi", label: "VI", ariaLabelKey: "selectVietnamese" },
+] as const;
+
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
@@ -106,25 +112,20 @@ export default function SiteHeader() {
             role="group"
             aria-label={translations.nav.languageSwitcherLabel}
           >
-            <button
-              type="button"
-              className={locale === "en" ? "is-selected" : ""}
-              aria-label={translations.nav.selectEnglish}
-              aria-pressed={locale === "en"}
-              onClick={() => setLocale("en")}
-            >
-              EN
-            </button>
-            <span aria-hidden="true">|</span>
-            <button
-              type="button"
-              className={locale === "vi" ? "is-selected" : ""}
-              aria-label={translations.nav.selectVietnamese}
-              aria-pressed={locale === "vi"}
-              onClick={() => setLocale("vi")}
-            >
-              VI
-            </button>
+            {languageOptions.map(({ locale: optionLocale, label, ariaLabelKey }, index) => (
+              <span className="language-option" key={optionLocale}>
+                {index > 0 && <span aria-hidden="true">|</span>}
+                <button
+                  type="button"
+                  className={locale === optionLocale ? "is-selected" : ""}
+                  aria-label={translations.nav[ariaLabelKey]}
+                  aria-pressed={locale === optionLocale}
+                  onClick={() => setLocale(optionLocale)}
+                >
+                  {label}
+                </button>
+              </span>
+            ))}
           </div>
         </nav>
       </div>

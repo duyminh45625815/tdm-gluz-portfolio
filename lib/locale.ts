@@ -2,7 +2,7 @@ import { cookies, headers } from "next/headers";
 import type { Locale } from "@/locales";
 
 export function isLocale(value: string | undefined): value is Locale {
-  return value === "en" || value === "vi";
+  return value === "en" || value === "vi" || value === "zh-CN";
 }
 
 function isValidCountryCode(value: string): boolean {
@@ -24,7 +24,11 @@ export function localeFromCountry(country: string | null): Locale {
     return "vi";
   }
 
-  return normalizedCountry === "VN" ? "vi" : "en";
+  if (normalizedCountry === "VN") {
+    return "vi";
+  }
+
+  return normalizedCountry === "CN" ? "zh-CN" : "en";
 }
 
 export async function getRequestLocale(): Promise<Locale> {

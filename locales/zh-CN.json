@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "title": "TDM GLUZ | IT 业务分析师求职者",
+    "description": "TDM GLUZ 的个人作品集，专注于需求分析、流程建模及技术驱动的解决方案。"
+  },
+  "nav": {
+    "home": "首页",
+    "about": "关于我",
+    "projects": "项目",
+    "skills": "技能",
+    "contact": "联系",
+    "mainAriaLabel": "主导航",
+    "brandHomeAriaLabel": "TDM GLUZ，返回首页",
+    "languageSwitcherLabel": "选择语言",
+    "selectChinese": "选择中文",
+    "selectEnglish": "选择英语",
+    "selectVietnamese": "选择越南语",
+    "openMenu": "打开导航菜单",
+    "closeMenu": "关闭导航菜单"
+  },
+  "skipToContent": "跳转至主要内容",
+  "hero": {
+    "welcome": "你好，欢迎来到我的作品集",
+    "intro": "我是",
+    "role": "IT 业务分析师求职者",
+    "statement": "将业务需求转化为切实可行的数字化解决方案。",
+    "description": "我毕业于信息技术专业，关注 Business Analysis、需求工程及技术驱动的解决方案。我乐于理解业务问题，并将需求梳理为结构清晰的解决方案。",
+    "projectsButton": "探索我的项目",
+    "aboutButton": "关于我",
+    "footnote": "软件工程 · HUFLIT · 越南",
+    "visualLabel": "GLUZ 个人品牌视觉设计",
+    "visualKicker": "业务 × 技术",
+    "visualName": "GLUZ",
+    "visualCaptionFirst": "理解真实需求。",
+    "visualCaptionSecond": "构建合适方案。",
+    "visualCoordinate": "分析 / 系统",
+    "visualIndex": "TDM / 01",
+    "bottomLineFirst": "始终保持好奇",
+    "bottomLineSecond": "以结构化思维设计"
+  },
+  "highlights": {
+    "ariaLabel": "关注领域",
+    "items": [
+      "业务分析",
+      "需求工程",
+      "流程建模",
+      "技术解决方案"
+    ]
+  },
+  "about": {
+    "sectionLabel": "关于我",
+    "headingFirst": "理解业务。",
+    "headingSecond": "连接技术。",
+    "description": "我相信，优秀的数字化解决方案始于对问题的准确理解。我专注于分析业务需求、梳理各项要求，并将业务期望与技术实现相连接。",
+    "moreLink": "了解更多",
+    "asideFirst": "清晰本身就是一种优势。",
+    "asideSecond": "从理解开始构建。"
+  },
+  "projects": {
+    "sectionLabel": "精选项目",
+    "heading": "将想法转化为解决方案。",
+    "intro": "通过学术项目理解需求，并设计实用的系统。",
+    "category": "业务分析",
+    "academicLabel": "学术项目",
+    "deliverablesLabel": "部分项目产出",
+    "viewProject": "查看项目",
+    "viewProjectAriaLabel": "查看 {title} 项目的交付成果",
+    "cinemaArtwork": "影院 / 订票",
+    "gymArtwork": "会员 / 运营",
+    "items": [
+      {
+        "slug": "cinevie-plus",
+        "title": "CineVie+",
+        "subtitle": "在线电影票预订系统",
+        "description": "一项学术项目，重点分析需求并设计在线电影票预订解决方案。",
+        "deliverables": [
+          "BRD",
+          "FRD",
+          "User Stories",
+          "UML 图",
+          "Figma 线框图"
+        ]
+      },
+      {
+        "slug": "gym-management",
+        "title": "Gym Management System",
+        "subtitle": "",
+        "description": "一项学术项目，重点分析健身房管理相关的业务流程与系统需求。",
+        "deliverables": [
+          "需求文档",
+          "Use Cases",
+          "流程建模"
+        ]
+      }
+    ]
+  },
+  "skills": {
+    "sectionLabel": "专业能力",
+    "heading": "我能带来的价值。",
+    "intro": "具备分析、流程与数据方面的基础，也关注让产品更易用的细节。",
+    "groups": [
+      {
+        "title": "需求分析",
+        "items": ["BRD", "FRD", "User Stories", "Use Cases"]
+      },
+      {
+        "title": "流程建模",
+        "items": [
+          "Activity Diagram",
+          "Sequence Diagram",
+          "业务流程分析"
+        ]
+      },
+      {
+        "title": "数据与技术",
+        "items": ["SQL Server", "软件开发基础"]
+      },
+      {
+        "title": "设计与测试",
+        "items": ["Figma", "线框图设计", "手动测试", "测试用例设计"]
+      }
+    ]
+  },
+  "contact": {
+    "sectionLabel": "欢迎交流",
+    "heading": "期待与你联系。",
+    "description": "期待新的机会、合作交流，并持续学习成长。",
+    "linksAriaLabel": "联系链接",
+    "email": "电子邮件",
+    "linkedin": "LinkedIn",
+    "github": "GitHub"
+  },
+  "footer": {
+    "brandHomeAriaLabel": "TDM GLUZ，返回顶部",
+    "motto": "思考。分析。创造。",
+    "backToTop": "返回顶部"
+  }
+}
