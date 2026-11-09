@@ -22,16 +22,24 @@ const bodyFont = Be_Vietnam_Pro({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
   const content = translations[locale].metadata;
+  const title = "Truong Duy Minh | Personal Portfolio - IT Business Analyst";
+  const image = {
+    url: "/opengraph-image",
+    width: 1200,
+    height: 630,
+    alt: "Truong Duy Minh | Personal Portfolio - IT Business Analyst",
+  };
 
   return {
     metadataBase: new URL("https://tdm-gluz.online"),
-    title: content.title,
+    title,
     description: content.description,
     openGraph: {
-      title: content.title,
+      title,
       description: content.description,
       url: "https://tdm-gluz.online",
       siteName: "TDM GLUZ",
+      images: [image],
       locale:
         locale === "ko"
           ? "ko_KR"
@@ -41,6 +49,12 @@ export async function generateMetadata(): Promise<Metadata> {
               ? "vi_VN"
               : "en_US",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: content.description,
+      images: [image.url],
     },
   };
 }

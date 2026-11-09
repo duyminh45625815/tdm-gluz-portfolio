@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "TRUONG DUY MINH — Personal Portfolio, IT Business Analyst";
+  "Truong Duy Minh | Personal Portfolio - IT Business Analyst";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -57,14 +57,14 @@ export default function OpenGraphImage() {
         <div
           style={{
             position: "absolute",
-            top: 72,
-            left: 82,
+            top: 68,
+            left: 76,
             display: "flex",
             alignItems: "center",
             gap: 12,
             color: "#bdb5c8",
-            fontSize: 17,
-            letterSpacing: 4,
+            fontSize: 16,
+            letterSpacing: 3,
             fontWeight: 600,
           }}
         >
@@ -83,9 +83,9 @@ export default function OpenGraphImage() {
         <div
           style={{
             position: "absolute",
-            top: 154,
-            left: 80,
-            width: 600,
+            top: 144,
+            left: 76,
+            width: 565,
             display: "flex",
             flexDirection: "column",
           }}
@@ -94,28 +94,28 @@ export default function OpenGraphImage() {
             style={{
               display: "flex",
               flexDirection: "column",
-              fontSize: 65,
-              lineHeight: 1.06,
-              letterSpacing: -2.7,
+              fontSize: 67,
+              lineHeight: 1.04,
+              letterSpacing: -2,
               fontWeight: 800,
             }}
           >
-            <span>TRUONG DUY</span>
+            <span>Truong Duy</span>
             <span
               style={{
-                background: "linear-gradient(90deg, #f8f5ff 0%, #c3a5ff 72%)",
+                background: "linear-gradient(90deg, #f8f5ff 0%, #e994ea 48%, #a78bfa 100%)",
                 backgroundClip: "text",
                 color: "transparent",
               }}
             >
-              MINH
+              Minh
             </span>
           </div>
           <div
             style={{
-              marginTop: 16,
+              marginTop: 13,
               color: "#c5bdce",
-              fontSize: 25,
+              fontSize: 24,
               letterSpacing: 0.3,
               fontWeight: 500,
             }}
@@ -127,13 +127,13 @@ export default function OpenGraphImage() {
               display: "flex",
               alignItems: "center",
               gap: 12,
-              marginTop: 31,
+              marginTop: 25,
             }}
           >
             <div
               style={{
                 width: 4,
-                height: 31,
+                height: 30,
                 borderRadius: 4,
                 background: "linear-gradient(180deg, #ec2bbe, #8b5cf6)",
               }}
@@ -141,7 +141,7 @@ export default function OpenGraphImage() {
             <div
               style={{
                 color: "#f0eaff",
-                fontSize: 24,
+                fontSize: 23,
                 fontWeight: 700,
               }}
             >
@@ -150,11 +150,11 @@ export default function OpenGraphImage() {
           </div>
           <div
             style={{
-              width: 490,
-              marginTop: 18,
+              width: 500,
+              marginTop: 16,
               color: "#aaa5b3",
-              fontSize: 18,
-              lineHeight: 1.55,
+              fontSize: 17,
+              lineHeight: 1.5,
             }}
           >
             Turning Business Needs Into Meaningful Digital Solutions.
@@ -164,13 +164,13 @@ export default function OpenGraphImage() {
         <div
           style={{
             position: "absolute",
-            top: 91,
-            right: 78,
-            width: 385,
-            height: 418,
+            top: 84,
+            right: 66,
+            width: 390,
+            height: 438,
             display: "flex",
             flexDirection: "column",
-            padding: 22,
+            padding: 21,
             border: "1px solid rgba(196, 171, 255, 0.23)",
             borderRadius: 18,
             background: "rgba(18, 17, 26, 0.78)",
@@ -218,7 +218,7 @@ export default function OpenGraphImage() {
             />
             {[
               { label: "BUSINESS NEEDS", detail: "Understand the problem", color: "#ec2bbe" },
-              { label: "REQUIREMENTS", detail: "Structure the details", color: "#c16cde" },
+              { label: "REQUIREMENTS", detail: "Define what matters", color: "#c16cde" },
               { label: "PROCESS & DATA", detail: "Connect the workflow", color: "#a276f1" },
               { label: "DIGITAL SOLUTIONS", detail: "Shape a clear outcome", color: "#8b5cf6" },
             ].map((item) => (
@@ -285,8 +285,8 @@ export default function OpenGraphImage() {
         <div
           style={{
             position: "absolute",
-            bottom: 68,
-            left: 82,
+            bottom: 55,
+            left: 76,
             display: "flex",
             alignItems: "center",
             gap: 12,
