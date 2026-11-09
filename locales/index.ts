@@ -1,13 +1,16 @@
 import en from "./en.json";
+import ja from "./ja.json";
+import ko from "./ko.json";
 import vi from "./vi.json";
-import zhCN from "./zh-CN.json";
 
-export type Locale = "zh-CN" | "en" | "vi";
+export const locales = ["ko", "ja", "vi", "en"] as const;
 
+export type Locale = (typeof locales)[number];
 export type Translations = typeof en;
 
 export const translations = {
-  en,
+  ko,
+  ja,
   vi,
-  "zh-CN": zhCN,
+  en,
 } satisfies Record<Locale, Translations>;

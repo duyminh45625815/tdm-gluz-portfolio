@@ -12,9 +12,10 @@ const navigation = [
 ] as const;
 
 const languageOptions = [
-  { locale: "zh-CN", label: "CN", ariaLabelKey: "selectChinese" },
-  { locale: "en", label: "EN", ariaLabelKey: "selectEnglish" },
+  { locale: "ko", label: "KR", ariaLabelKey: "selectKorean" },
+  { locale: "ja", label: "JP", ariaLabelKey: "selectJapanese" },
   { locale: "vi", label: "VI", ariaLabelKey: "selectVietnamese" },
+  { locale: "en", label: "EN", ariaLabelKey: "selectEnglish" },
 ] as const;
 
 export default function SiteHeader() {

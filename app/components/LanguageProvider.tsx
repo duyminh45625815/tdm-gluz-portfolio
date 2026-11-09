@@ -30,6 +30,10 @@ export function LanguageProvider({
   const setLocale = useCallback((nextLocale: Locale) => {
     document.cookie = `locale=${nextLocale}; Max-Age=31536000; Path=/; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
     document.documentElement.lang = nextLocale;
+    document.title = translations[nextLocale].metadata.title;
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", translations[nextLocale].metadata.description);
     setCurrentLocale(nextLocale);
   }, []);
 

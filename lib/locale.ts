@@ -1,43 +1,44 @@
 import { cookies, headers } from "next/headers";
-import type { Locale } from "@/locales";
+import { locales, type Locale } from "@/locales";
 
 export function isLocale(value: string | undefined): value is Locale {
-  return value === "en" || value === "vi" || value === "zh-CN";
+  return locales.some((locale) => locale === value);
 }
 
-function isValidCountryCode(value: string): boolean {
-  if (!/^[A-Z]{2}$/.test(value)) {
-    return false;
-  }
+export function detectLocale(countryCode?: string | null): Locale {
+  const country = countryCode?.trim().toUpperCase();
 
-  const countryName = new Intl.DisplayNames(["en"], {
-    type: "region",
-  }).of(value);
-
-  return Boolean(countryName && countryName !== value && countryName !== "Unknown Region");
-}
-
-export function localeFromCountry(country: string | null): Locale {
-  const normalizedCountry = country?.trim().toUpperCase();
-
-  if (!normalizedCountry || !isValidCountryCode(normalizedCountry)) {
+  if (!country) {
     return "vi";
   }
 
-  if (normalizedCountry === "VN") {
-    return "vi";
+  switch (country) {
+    case "VN":
+      return "vi";
+    case "JP":
+      return "ja";
+    case "KR":
+      return "ko";
+    default:
+      return "en";
   }
-
-  return normalizedCountry === "CN" ? "zh-CN" : "en";
 }
 
 export async function getRequestLocale(): Promise<Locale> {
   const [cookieStore, requestHeaders] = await Promise.all([cookies(), headers()]);
   const savedLocale = cookieStore.get("locale")?.value;
+  const countryHeader = requestHeaders.get("x-vercel-ip-country");
+  const detectedLocale = detectLocale(countryHeader);
+  const locale = isLocale(savedLocale) ? savedLocale : detectedLocale;
 
-  if (isLocale(savedLocale)) {
-    return savedLocale;
+  if (process.env.NODE_ENV === "development") {
+    console.info("[locale-detection]", {
+      countryHeader,
+      savedLocale: savedLocale ?? null,
+      detectedLocale,
+      finalLocalePassedToProvider: locale,
+    });
   }
 
-  return localeFromCountry(requestHeaders.get("x-vercel-ip-country"));
+  return locale;
 }

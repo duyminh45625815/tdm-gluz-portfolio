@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Bricolage_Grotesque } from "next/font/google";
-import { getRequestLocale } from "@/lib/locale";
 import { translations } from "@/locales";
+import { getRequestLocale } from "@/lib/locale";
 import { LanguageProvider } from "./components/LanguageProvider";
 import "./globals.css";
 
@@ -33,7 +33,13 @@ export async function generateMetadata(): Promise<Metadata> {
       url: "https://tdm-gluz.online",
       siteName: "TDM GLUZ",
       locale:
-        locale === "vi" ? "vi_VN" : locale === "zh-CN" ? "zh_CN" : "en_US",
+        locale === "ko"
+          ? "ko_KR"
+          : locale === "ja"
+            ? "ja_JP"
+            : locale === "vi"
+              ? "vi_VN"
+              : "en_US",
       type: "website",
     },
   };

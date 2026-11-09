@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "title": "TDM GLUZ | IT 비즈니스 분석가를 꿈꾸며",
+    "description": "TDM GLUZ의 포트폴리오입니다. 요구사항 분석, 프로세스 모델링, 기술 기반 솔루션에 집중합니다."
+  },
+  "nav": {
+    "home": "홈",
+    "about": "소개",
+    "projects": "프로젝트",
+    "skills": "역량",
+    "contact": "연락하기",
+    "mainAriaLabel": "메인 내비게이션",
+    "brandHomeAriaLabel": "TDM GLUZ 홈으로",
+    "languageSwitcherLabel": "언어 선택",
+    "selectKorean": "한국어 선택",
+    "selectJapanese": "일본어 선택",
+    "selectEnglish": "영어 선택",
+    "selectVietnamese": "베트남어 선택",
+    "openMenu": "내비게이션 메뉴 열기",
+    "closeMenu": "내비게이션 메뉴 닫기"
+  },
+  "skipToContent": "본문으로 건너뛰기",
+  "hero": {
+    "welcome": "포트폴리오에 오신 것을 환영합니다",
+    "intro": "저는",
+    "role": "IT 비즈니스 분석가를 꿈꾸고 있습니다",
+    "statement": "비즈니스의 요구를 의미 있는 디지털 솔루션으로.",
+    "description": "정보기술을 전공했으며 비즈니스 분석, 요구공학, 기술 기반 솔루션에 관심이 있습니다. 비즈니스 문제를 이해하고 요구사항을 체계적인 해결책으로 구체화하는 일을 좋아합니다.",
+    "projectsButton": "프로젝트 살펴보기",
+    "aboutButton": "소개",
+    "footnote": "소프트웨어 공학 · HUFLIT · 베트남",
+    "visualLabel": "GLUZ 개인 브랜드 아트워크",
+    "visualKicker": "비즈니스 × 기술",
+    "visualName": "GLUZ",
+    "visualCaptionFirst": "필요를 이해하고.",
+    "visualCaptionSecond": "해결책을 설계합니다.",
+    "visualCoordinate": "분석 / 시스템",
+    "visualIndex": "TDM / 01",
+    "bottomLineFirst": "호기심으로 탐구하고",
+    "bottomLineSecond": "체계적으로 설계합니다"
+  },
+  "highlights": {
+    "ariaLabel": "관심 분야",
+    "items": [
+      "비즈니스 분석",
+      "요구공학",
+      "프로세스 모델링",
+      "기술 솔루션"
+    ]
+  },
+  "about": {
+    "sectionLabel": "소개",
+    "headingFirst": "비즈니스를 이해하고.",
+    "headingSecond": "기술로 연결합니다.",
+    "description": "훌륭한 디지털 솔루션은 올바른 문제를 이해하는 데서 시작한다고 생각합니다. 비즈니스 요구를 분석하고 요구사항을 정리해 비즈니스의 기대와 기술 구현을 연결하는 데 집중합니다.",
+    "moreLink": "더 알아보기",
+    "asideFirst": "명확함도 하나의 기능입니다.",
+    "asideSecond": "이해에서 시작합니다."
+  },
+  "projects": {
+    "sectionLabel": "주요 프로젝트",
+    "heading": "아이디어를 솔루션으로.",
+    "intro": "요구사항을 이해하고 유용한 시스템을 설계하는 데 집중한 학업 프로젝트입니다.",
+    "category": "비즈니스 분석",
+    "academicLabel": "학업 프로젝트",
+    "deliverablesLabel": "주요 산출물",
+    "viewProject": "프로젝트 보기",
+    "viewProjectAriaLabel": "{title} 프로젝트 산출물 보기",
+    "cinemaArtwork": "영화관 / 예매",
+    "gymArtwork": "회원 / 운영",
+    "items": [
+      {
+        "slug": "cinevie-plus",
+        "title": "CineVie+",
+        "subtitle": "온라인 영화 티켓 예매 시스템",
+        "description": "요구사항을 분석하고 온라인 영화 티켓 예매 솔루션을 설계한 학업 프로젝트입니다.",
+        "deliverables": [
+          "BRD",
+          "FRD",
+          "사용자 스토리",
+          "UML 다이어그램",
+          "Figma 와이어프레임"
+        ]
+      },
+      {
+        "slug": "gym-management",
+        "title": "헬스장 관리 시스템",
+        "subtitle": "",
+        "description": "헬스장 관리를 위한 업무 흐름과 시스템 요구사항을 분석한 학업 프로젝트입니다.",
+        "deliverables": [
+          "요구사항 문서",
+          "유스 케이스",
+          "프로세스 모델링"
+        ]
+      }
+    ]
+  },
+  "skills": {
+    "sectionLabel": "핵심 역량",
+    "heading": "분석부터 사용성까지.",
+    "intro": "분석, 프로세스, 데이터의 기반을 갖추고 제품을 더 편리하게 만드는 세부 요소에도 주의를 기울입니다.",
+    "groups": [
+      {
+        "title": "요구사항 분석",
+        "items": ["BRD", "FRD", "사용자 스토리", "유스 케이스"]
+      },
+      {
+        "title": "프로세스 모델링",
+        "items": [
+          "액티비티 다이어그램",
+          "시퀀스 다이어그램",
+          "비즈니스 프로세스 분석"
+        ]
+      },
+      {
+        "title": "데이터 및 기술",
+        "items": ["SQL Server", "소프트웨어 개발 기초"]
+      },
+      {
+        "title": "디자인 및 테스트",
+        "items": ["Figma", "와이어프레이밍", "수동 테스트", "테스트 케이스 설계"]
+      }
+    ]
+  },
+  "contact": {
+    "sectionLabel": "대화를 시작해 보세요",
+    "heading": "함께 소통해요.",
+    "description": "새로운 기회와 협업을 환영하며 꾸준히 배우고 성장하고 있습니다.",
+    "linksAriaLabel": "연락처 링크",
+    "email": "이메일",
+    "linkedin": "LinkedIn",
+    "github": "GitHub"
+  },
+  "footer": {
+    "brandHomeAriaLabel": "TDM GLUZ 페이지 위로 이동",
+    "motto": "생각하고. 분석하고. 만듭니다.",
+    "backToTop": "맨 위로"
+  }
+}

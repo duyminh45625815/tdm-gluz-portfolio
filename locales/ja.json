@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "title": "TDM GLUZ | ITビジネスアナリストを目指して",
+    "description": "TDM GLUZのポートフォリオ。要件分析、業務プロセスのモデリング、テクノロジーを活用したソリューションに取り組んでいます。"
+  },
+  "nav": {
+    "home": "ホーム",
+    "about": "私について",
+    "projects": "プロジェクト",
+    "skills": "スキル",
+    "contact": "お問い合わせ",
+    "mainAriaLabel": "メインナビゲーション",
+    "brandHomeAriaLabel": "TDM GLUZ、ホームへ",
+    "languageSwitcherLabel": "言語を選択",
+    "selectKorean": "韓国語を選択",
+    "selectJapanese": "日本語を選択",
+    "selectEnglish": "英語を選択",
+    "selectVietnamese": "ベトナム語を選択",
+    "openMenu": "ナビゲーションメニューを開く",
+    "closeMenu": "ナビゲーションメニューを閉じる"
+  },
+  "skipToContent": "本文へ移動",
+  "hero": {
+    "welcome": "ポートフォリオへようこそ",
+    "intro": "私は",
+    "role": "ITビジネスアナリストを目指しています",
+    "statement": "ビジネスのニーズを価値あるデジタルソリューションへ。",
+    "description": "情報技術を学び、ビジネスアナリシス、要求工学、テクノロジーを活用したソリューションに関心を持っています。ビジネス上の課題を理解し、要件を整理された解決策へとつなげることに取り組んでいます。",
+    "projectsButton": "プロジェクトを見る",
+    "aboutButton": "私について",
+    "footnote": "ソフトウェア工学 · HUFLIT · ベトナム",
+    "visualLabel": "GLUZのパーソナルブランドビジュアル",
+    "visualKicker": "ビジネス × テクノロジー",
+    "visualName": "GLUZ",
+    "visualCaptionFirst": "ニーズを理解する。",
+    "visualCaptionSecond": "解決策を形にする。",
+    "visualCoordinate": "分析 / システム",
+    "visualIndex": "TDM / 01",
+    "bottomLineFirst": "好奇心を大切に",
+    "bottomLineSecond": "構造的に考える"
+  },
+  "highlights": {
+    "ariaLabel": "関心分野",
+    "items": [
+      "ビジネスアナリシス",
+      "要求工学",
+      "プロセスモデリング",
+      "テクノロジーソリューション"
+    ]
+  },
+  "about": {
+    "sectionLabel": "私について",
+    "headingFirst": "ビジネスを理解し、",
+    "headingSecond": "テクノロジーでつなぐ。",
+    "description": "優れたデジタルソリューションは、課題を正しく理解することから始まると考えています。ビジネスニーズを分析し、要件を整理して、ビジネスの期待と技術的な実装をつなぐことに取り組んでいます。",
+    "moreLink": "さらに詳しく",
+    "asideFirst": "明確さも機能のひとつ。",
+    "asideSecond": "理解することから始める。"
+  },
+  "projects": {
+    "sectionLabel": "主なプロジェクト",
+    "heading": "アイデアを解決策へ。",
+    "intro": "要件の理解と、役立つシステムの設計に取り組んだ学術プロジェクトです。",
+    "category": "ビジネスアナリシス",
+    "academicLabel": "学術プロジェクト",
+    "deliverablesLabel": "主な成果物",
+    "viewProject": "プロジェクトを見る",
+    "viewProjectAriaLabel": "{title}の成果物を見る",
+    "cinemaArtwork": "映画館 / チケット予約",
+    "gymArtwork": "会員 / 運営",
+    "items": [
+      {
+        "slug": "cinevie-plus",
+        "title": "CineVie+",
+        "subtitle": "オンライン映画チケット予約システム",
+        "description": "要件を分析し、オンラインで映画チケットを予約するソリューションを設計した学術プロジェクトです。",
+        "deliverables": [
+          "BRD",
+          "FRD",
+          "ユーザーストーリー",
+          "UML図",
+          "Figmaワイヤーフレーム"
+        ]
+      },
+      {
+        "slug": "gym-management",
+        "title": "ジム管理システム",
+        "subtitle": "",
+        "description": "ジム運営の業務フローとシステム要件を分析した学術プロジェクトです。",
+        "deliverables": [
+          "要件定義書",
+          "ユースケース",
+          "プロセスモデリング"
+        ]
+      }
+    ]
+  },
+  "skills": {
+    "sectionLabel": "できること",
+    "heading": "分析から使いやすさまで。",
+    "intro": "分析、プロセス、データの基礎を活かし、製品をより使いやすくする細部にも目を向けています。",
+    "groups": [
+      {
+        "title": "要件分析",
+        "items": ["BRD", "FRD", "ユーザーストーリー", "ユースケース"]
+      },
+      {
+        "title": "プロセスモデリング",
+        "items": [
+          "アクティビティ図",
+          "シーケンス図",
+          "業務プロセス分析"
+        ]
+      },
+      {
+        "title": "データとテクノロジー",
+        "items": ["SQL Server", "ソフトウェア開発の基礎"]
+      },
+      {
+        "title": "デザインとテスト",
+        "items": ["Figma", "ワイヤーフレーム作成", "手動テスト", "テストケース設計"]
+      }
+    ]
+  },
+  "contact": {
+    "sectionLabel": "お気軽にご連絡ください",
+    "heading": "つながりましょう。",
+    "description": "新しい機会や協業に関心があり、学び続けることを大切にしています。",
+    "linksAriaLabel": "連絡先リンク",
+    "email": "メール",
+    "linkedin": "LinkedIn",
+    "github": "GitHub"
+  },
+  "footer": {
+    "brandHomeAriaLabel": "TDM GLUZ、ページ上部へ戻る",
+    "motto": "考える。分析する。創造する。",
+    "backToTop": "ページ上部へ"
+  }
+}

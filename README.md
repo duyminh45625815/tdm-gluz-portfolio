@@ -2,14 +2,56 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Languages
 
-The homepage supports Simplified Chinese, English, and Vietnamese. Translations
-are maintained in `locales/zh-CN.json`, `locales/en.json`, and `locales/vi.json`;
-keep the same keys and structure in all three files when adding or editing copy.
-The initial language follows the `locale` cookie, then the
-`x-vercel-ip-country` request header (`CN` selects Chinese, `VN` Vietnamese, and
-other valid country codes English); an unknown country defaults to Vietnamese.
-The navigation language switcher saves the selected language in the `locale`
-cookie for one year.
+The homepage supports Korean (`ko`), Japanese (`ja`), Vietnamese (`vi`), and
+English (`en`). Their dictionaries are maintained in `locales/ko.json`,
+`locales/ja.json`, `locales/vi.json`, and `locales/en.json`; keep the same keys
+and structure in all four files.
+
+The initial language follows a valid `locale` cookie, then the server-side
+`x-vercel-ip-country` request header. `VN` selects Vietnamese, `JP` Japanese,
+`KR` Korean, and every other non-empty country code English. A missing or
+empty country code defaults to Vietnamese. The language switcher saves manual
+selections in the `locale` cookie for one year.
+
+In development, the server logs the received country header, saved locale
+cookie, detected locale, and final locale passed to the client provider as
+`[locale-detection]`. These logs are disabled outside development.
+
+### Test country detection locally
+
+Vercel supplies `x-vercel-ip-country` to production requests. A VPN location
+does not make this header available on localhost, so send the header directly
+to the development server to simulate it:
+
+```powershell
+function Test-CountryLocale($country) {
+  $headers = @{}
+  if ($null -ne $country) {
+    $headers["x-vercel-ip-country"] = $country
+  }
+  $response = Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:3000" -Headers $headers
+  [regex]::Match($response.Content, '<html[^>]*\blang="([^"]+)"').Groups[1].Value
+}
+
+Test-CountryLocale VN # vi
+Test-CountryLocale JP # ja
+Test-CountryLocale KR # ko
+Test-CountryLocale US # en
+Test-CountryLocale SG # en
+Test-CountryLocale CN # en
+Test-CountryLocale $null # vi (missing header)
+```
+
+For cookie priority, for example `ko` overriding a Vietnam header:
+
+```powershell
+$html = & curl.exe -s -H "x-vercel-ip-country: VN" -H "Cookie: locale=ko" "http://localhost:3000"
+[regex]::Match(($html -join "`n"), '<html[^>]*\blang="([^"]+)"').Groups[1].Value # ko
+```
+
+In a browser, clear the `locale` cookie to test automatic detection. Local
+header simulation does not alter production detection; deployed requests use
+the country header supplied by Vercel.
 
 ## Getting Started
 
