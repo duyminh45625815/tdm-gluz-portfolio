@@ -2,10 +2,10 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Languages
 
-The homepage supports Korean (`ko`), Japanese (`ja`), Vietnamese (`vi`), and
-English (`en`). Their dictionaries are maintained in `locales/ko.json`,
-`locales/ja.json`, `locales/vi.json`, and `locales/en.json`; keep the same keys
-and structure in all four files.
+The site, including the homepage and `/about`, supports Korean (`ko`), Japanese
+(`ja`), Vietnamese (`vi`), and English (`en`). Their dictionaries are maintained
+in `locales/ko.json`, `locales/ja.json`, `locales/vi.json`, and `locales/en.json`;
+keep the same keys and structure in all four files.
 
 The initial language follows a valid `locale` cookie, then the server-side
 `x-vercel-ip-country` request header. `VN` selects Vietnamese, `JP` Japanese,

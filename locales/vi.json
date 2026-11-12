@@ -63,6 +63,102 @@
     "asideFirst": "Rõ ràng là một tính năng.",
     "asideSecond": "Bắt đầu từ sự thấu hiểu."
   },
+  "aboutPage": {
+    "metadata": {
+      "title": "Giới thiệu về Truong Duy Minh | TDM GLUZ",
+      "description": "Tìm hiểu về Truong Duy Minh, tân cử nhân Kỹ thuật phần mềm đang định hướng trở thành Chuyên viên Phân tích nghiệp vụ CNTT."
+    },
+    "hero": {
+      "eyebrow": "Một chút về người đứng sau công việc",
+      "heading": "Tìm hiểu thêm về tôi.",
+      "role": "Định hướng Chuyên viên Phân tích nghiệp vụ CNTT",
+      "intro": "Tôi là Truong Duy Minh, tân cử nhân Công nghệ thông tin, chuyên ngành Kỹ thuật phần mềm. Tôi đang hướng đến lĩnh vực Business Analysis, nơi tôi có thể kết nối nhu cầu kinh doanh với các yêu cầu phần mềm rõ ràng và thiết thực.",
+      "portraitLabel": "Vị trí ảnh chân dung của Truong Duy Minh",
+      "portraitPlaceholder": "ẢNH CHÂN DUNG SẼ ĐƯỢC THÊM TẠI ĐÂY",
+      "portraitCaption": "Có thể bổ sung ảnh chân dung thật tại đây sau.",
+      "location": "TP. Hồ Chí Minh, Việt Nam",
+      "focus": "Kinh doanh × Công nghệ"
+    },
+    "story": {
+      "label": "Câu chuyện của tôi",
+      "heading": "Từ việc xây dựng phần mềm đến tìm hiểu vì sao phần mềm cần được xây dựng.",
+      "paragraphs": [
+        "Quá trình học Kỹ thuật phần mềm giúp tôi có nền tảng về cách phần mềm được thiết kế và phát triển. Càng học, tôi càng quan tâm đến những câu hỏi trước khi bắt tay vào triển khai: vấn đề cần giải quyết là gì, ai cần giải pháp này và điều gì khiến nó thực sự hữu ích?",
+        "Sự tò mò đó đưa tôi đến với Business Analysis. Tôi thích lắng nghe nhu cầu, đặt câu hỏi để làm rõ và chuyển những điều tìm hiểu được thành yêu cầu, mô hình quy trình để cả nhóm có thể cùng trao đổi và thực hiện.",
+        "Tôi đang ở giai đoạn đầu của sự nghiệp và mong muốn tiếp tục phát triển khả năng kết nối kỳ vọng kinh doanh với triển khai kỹ thuật thông qua phân tích cẩn trọng và tinh thần cộng tác."
+      ],
+      "asideLabel": "Góc nhìn của tôi",
+      "asideQuote": "Bắt đầu từ vấn đề. Diễn đạt giải pháp thật rõ ràng."
+    },
+    "education": {
+      "label": "Học vấn",
+      "heading": "Nền tảng từ Kỹ thuật phần mềm.",
+      "institution": "Trường Đại học Ngoại ngữ - Tin học TP. Hồ Chí Minh",
+      "shortInstitution": "HUFLIT",
+      "degree": "Công nghệ thông tin",
+      "major": "Chuyên ngành Kỹ thuật phần mềm",
+      "status": "Vừa tốt nghiệp"
+    },
+    "areas": {
+      "label": "Tôi quan tâm đến",
+      "heading": "Những lĩnh vực tôi đang trau dồi.",
+      "intro": "Các công việc tôi muốn tìm hiểu và phát triển khi theo đuổi vai trò IT Business Analyst.",
+      "items": [
+        { "title": "Phân tích yêu cầu", "description": "Thu thập, làm rõ và hệ thống hóa nhu cầu để nhóm có thể cùng xem xét." },
+        { "title": "Mô hình hóa quy trình nghiệp vụ", "description": "Diễn tả hoạt động và hành vi hệ thống bằng UML, Activity Diagram và Sequence Diagram." },
+        { "title": "Tài liệu phần mềm", "description": "Sắp xếp thông tin trong BRD, FRD, SRS, User Stories và Use Cases." },
+        { "title": "Phác thảo UI/UX", "description": "Dùng Figma để phác thảo giao diện, giúp việc trao đổi ý tưởng dễ dàng hơn." },
+        { "title": "Kết nối nghiệp vụ và kỹ thuật", "description": "Kết nối góc nhìn của Business, Developers và Testers dựa trên yêu cầu chung." },
+        { "title": "Kiểm thử phần mềm", "description": "Vận dụng kiến thức nền tảng về kiểm thử thủ công, kiểm thử chức năng và Test Case." }
+      ]
+    },
+    "knowledge": {
+      "label": "Kiến thức & công cụ",
+      "heading": "Nền tảng tôi tiếp tục phát triển.",
+      "groups": [
+        { "title": "Business Analysis", "items": ["Khai thác yêu cầu", "Phân tích yêu cầu", "BRD", "FRD", "SRS", "User Stories", "Use Cases"] },
+        { "title": "Mô hình hóa", "items": ["UML", "Activity Diagram", "Sequence Diagram"] },
+        { "title": "Công cụ", "items": ["Figma", "Microsoft Office"] },
+        { "title": "Nền tảng kỹ thuật", "items": ["SQL Server cơ bản", "Kiểm thử thủ công", "Thiết kế Test Case", "Kiểm thử chức năng"] }
+      ]
+    },
+    "projects": {
+      "label": "Dự án học thuật",
+      "heading": "Học hỏi qua những tình huống thực tế.",
+      "intro": "Các dự án sinh viên giúp tôi thực hành tư duy về nhu cầu hệ thống và quy trình vận hành.",
+      "academicLabel": "Dự án học thuật",
+      "items": [
+        { "title": "CineVie+", "subtitle": "Hệ thống đặt vé xem phim trực tuyến", "description": "Dự án học thuật tìm hiểu yêu cầu và luồng người dùng của hệ thống đặt vé xem phim trực tuyến." },
+        { "title": "Hệ thống quản lý phòng gym", "subtitle": "Quy trình nghiệp vụ & yêu cầu hệ thống", "description": "Dự án học thuật tập trung mô hình hóa hoạt động phòng gym và xác định các yêu cầu hệ thống hỗ trợ." }
+      ]
+    },
+    "approach": {
+      "label": "Cách tôi tiếp cận công việc",
+      "heading": "Thấu hiểu trước. Cùng nhau kiểm chứng.",
+      "intro": "Quy trình thực hành tôi áp dụng trong học tập và các dự án.",
+      "disclaimer": "Đây là cách tiếp cận tôi đang học hỏi và thực hành, không phải tuyên bố về kinh nghiệm chuyên môn lâu năm.",
+      "steps": [
+        "Thấu hiểu vấn đề kinh doanh",
+        "Thu thập và làm rõ yêu cầu",
+        "Phân tích và lập tài liệu yêu cầu",
+        "Mô hình hóa quy trình và hành vi hệ thống",
+        "Phối hợp với Developers và Testers",
+        "Rà soát và xác thực giải pháp"
+      ]
+    },
+    "beyond": {
+      "label": "Ngoài công việc",
+      "heading": "Không ngừng học hỏi và khám phá.",
+      "description": "Tôi dành thời gian tìm hiểu công nghệ, khám phá cách phần mềm có thể đáp ứng những nhu cầu khác nhau và nhìn lại quá trình phát triển của bản thân. Tôi tin rằng sự tiến bộ bền vững đến từ tò mò, thực hành và sẵn sàng đón nhận góp ý."
+    },
+    "closing": {
+      "eyebrow": "Bạn có câu hỏi hoặc cơ hội phù hợp?",
+      "heading": "Hãy cùng kết nối",
+      "description": "Tôi rất mong nhận được lời nhắn và có cơ hội tiếp tục trò chuyện.",
+      "contactButton": "Liên hệ với tôi",
+      "projectsButton": "Khám phá dự án"
+    }
+  },
   "projects": {
     "sectionLabel": "Dự án tiêu biểu",
     "heading": "Biến ý tưởng thành giải pháp.",

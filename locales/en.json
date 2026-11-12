@@ -63,6 +63,102 @@
     "asideFirst": "Clarity is a feature.",
     "asideSecond": "Build from understanding."
   },
+  "aboutPage": {
+    "metadata": {
+      "title": "About Truong Duy Minh | TDM GLUZ",
+      "description": "Learn more about Truong Duy Minh, a recent Software Engineering graduate aspiring to become an IT Business Analyst."
+    },
+    "hero": {
+      "eyebrow": "A little context behind the work",
+      "heading": "A Little More About Me.",
+      "role": "Aspiring IT Business Analyst",
+      "intro": "I'm Truong Duy Minh, a recent Information Technology graduate majoring in Software Engineering. I'm working toward a career in Business Analysis, where I can help turn business needs into clear, practical software requirements.",
+      "portraitLabel": "Portrait placeholder for Truong Duy Minh",
+      "portraitPlaceholder": "YOUR PORTRAIT GOES HERE",
+      "portraitCaption": "A real portrait can be added here later.",
+      "location": "Ho Chi Minh City, Vietnam",
+      "focus": "Business × Technology"
+    },
+    "story": {
+      "label": "My story",
+      "heading": "From building software to understanding why it should be built.",
+      "paragraphs": [
+        "Studying Software Engineering gave me a foundation in how software is designed and developed. Along the way, I became just as curious about the questions that come before implementation: what problem are we solving, who needs the solution, and what would make it useful?",
+        "That curiosity led me toward Business Analysis. I enjoy listening for needs, asking clarifying questions, and shaping what I learn into requirements and process models that a team can discuss and act on.",
+        "I'm at the beginning of my career, and I want to keep growing my ability to connect business expectations with technical implementation through thoughtful analysis and collaboration."
+      ],
+      "asideLabel": "My perspective",
+      "asideQuote": "Start with the problem. Make the solution understandable."
+    },
+    "education": {
+      "label": "Education",
+      "heading": "A software engineering foundation.",
+      "institution": "Ho Chi Minh City University of Foreign Languages and Information Technology",
+      "shortInstitution": "HUFLIT",
+      "degree": "Information Technology",
+      "major": "Major in Software Engineering",
+      "status": "Recently graduated"
+    },
+    "areas": {
+      "label": "What I do",
+      "heading": "Areas I’m building experience in.",
+      "intro": "The kinds of work I’m drawn to as I develop as an IT Business Analyst.",
+      "items": [
+        { "title": "Requirement Analysis", "description": "Eliciting, clarifying, and organizing needs into requirements a team can review." },
+        { "title": "Business Process Modeling", "description": "Mapping activities and system behavior with UML, activity, and sequence diagrams." },
+        { "title": "Software Documentation", "description": "Structuring information in BRDs, FRDs, SRS documents, user stories, and use cases." },
+        { "title": "UI/UX Wireframing", "description": "Using Figma to sketch interfaces and make ideas easier to discuss." },
+        { "title": "Business & Technical Communication", "description": "Helping business, development, and testing perspectives meet around shared requirements." },
+        { "title": "Software Testing", "description": "Applying a foundation in manual, functional, and test-case-based validation." }
+      ]
+    },
+    "knowledge": {
+      "label": "Knowledge & tools",
+      "heading": "A foundation I’m continuing to grow.",
+      "groups": [
+        { "title": "Business analysis", "items": ["Requirement Elicitation", "Requirement Analysis", "BRD", "FRD", "SRS", "User Stories", "Use Cases"] },
+        { "title": "Modeling", "items": ["UML", "Activity Diagram", "Sequence Diagram"] },
+        { "title": "Tools", "items": ["Figma", "Microsoft Office"] },
+        { "title": "Technical foundation", "items": ["Basic SQL Server", "Manual Testing", "Test Case Design", "Functional Testing"] }
+      ]
+    },
+    "projects": {
+      "label": "Academic projects",
+      "heading": "Learning by working through real scenarios.",
+      "intro": "Student projects that helped me practice thinking about system needs and workflows.",
+      "academicLabel": "Academic project",
+      "items": [
+        { "title": "CineVie+", "subtitle": "Online Cinema Ticket Booking System", "description": "An academic project exploring requirements and user flows for an online cinema ticket booking system." },
+        { "title": "Gym Management System", "subtitle": "Business workflows & system requirements", "description": "An academic project focused on modeling gym operations and identifying supporting system requirements." }
+      ]
+    },
+    "approach": {
+      "label": "My working approach",
+      "heading": "Understand first. Validate together.",
+      "intro": "A practical workflow I use in learning and project work.",
+      "disclaimer": "This reflects my current learning and working approach—not a claim of extensive professional experience.",
+      "steps": [
+        "Understand the business problem",
+        "Gather and clarify requirements",
+        "Analyze and document requirements",
+        "Model workflows and system behavior",
+        "Collaborate with Developers and Testers",
+        "Review and validate the solution"
+      ]
+    },
+    "beyond": {
+      "label": "Beyond work",
+      "heading": "Keep learning, stay curious.",
+      "description": "I make space to keep learning about technology, explore how software can support different needs, and reflect on how I can grow. For me, steady progress comes from curiosity, practice, and being open to feedback."
+    },
+    "closing": {
+      "eyebrow": "Have a question or opportunity?",
+      "heading": "Let’s Connect",
+      "description": "I’d be glad to hear from you and continue the conversation.",
+      "contactButton": "Contact Me",
+      "projectsButton": "Explore My Projects"
+    }
+  },
   "projects": {
     "sectionLabel": "Selected work",
     "heading": "Turning ideas into solutions.",

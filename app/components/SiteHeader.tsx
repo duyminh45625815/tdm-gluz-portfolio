@@ -1,14 +1,15 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "./LanguageProvider";
 
 const navigation = [
-  { key: "home", href: "#home" },
-  { key: "about", href: "#about" },
-  { key: "projects", href: "#projects" },
-  { key: "skills", href: "#skills" },
-  { key: "contact", href: "#contact" },
+  { key: "home", sectionId: "home" },
+  { key: "about", sectionId: "about" },
+  { key: "projects", sectionId: "projects" },
+  { key: "skills", sectionId: "skills" },
+  { key: "contact", sectionId: "contact" },
 ] as const;
 
 const languageOptions = [
@@ -20,13 +21,24 @@ const languageOptions = [
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
+  const [observedSection, setObservedSection] = useState("home");
+  const pathname = usePathname();
   const { locale, setLocale, translations } = useLanguage();
+  const activeSection =
+    pathname === "/about"
+      ? "about"
+      : pathname === "/"
+        ? observedSection
+        : "";
 
   useEffect(() => {
+    if (pathname !== "/") {
+      return;
+    }
+
     const sections = navigation
-      .map(({ href }) => document.querySelector(href))
-      .filter((section): section is Element => section !== null);
+      .map(({ sectionId }) => document.getElementById(sectionId))
+      .filter((section): section is HTMLElement => section !== null);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -36,15 +48,29 @@ export default function SiteHeader() {
         const activeId = visibleSections[0]?.target.id;
 
         if (activeId) {
-          setActiveSection(activeId);
+          setObservedSection(activeId);
         }
       },
       { rootMargin: "-25% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75] },
     );
 
     sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
+    const hashTarget = window.location.hash.slice(1);
+    const scrollFrame = hashTarget
+      ? window.requestAnimationFrame(() => {
+          document
+            .getElementById(hashTarget)
+            ?.scrollIntoView({ block: "start" });
+        })
+      : 0;
+
+    return () => {
+      observer.disconnect();
+      if (scrollFrame) {
+        window.cancelAnimationFrame(scrollFrame);
+      }
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -66,7 +92,7 @@ export default function SiteHeader() {
       <div className="page-shell header-inner">
         <a
           className="brand"
-          href="#home"
+          href={pathname === "/" ? "#home" : "/#home"}
           aria-label={translations.nav.brandHomeAriaLabel}
           onClick={() => setMenuOpen(false)}
         >
@@ -93,8 +119,14 @@ export default function SiteHeader() {
           className={`primary-navigation${menuOpen ? " is-open" : ""}`}
           aria-label={translations.nav.mainAriaLabel}
         >
-          {navigation.map(({ key, href }) => {
-            const sectionId = href.slice(1);
+          {navigation.map(({ key, sectionId }) => {
+            const href =
+              key === "about"
+                ? "/about"
+                : pathname === "/"
+                  ? `#${sectionId}`
+                  : `/#${sectionId}`;
+
             return (
               <a
                 className={`nav-link${sectionId === "contact" ? " nav-contact" : ""}${activeSection === sectionId ? " is-active" : ""}`}

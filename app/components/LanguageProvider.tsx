@@ -30,10 +30,14 @@ export function LanguageProvider({
   const setLocale = useCallback((nextLocale: Locale) => {
     document.cookie = `locale=${nextLocale}; Max-Age=31536000; Path=/; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
     document.documentElement.lang = nextLocale;
-    document.title = translations[nextLocale].metadata.title;
+    const metadata =
+      window.location.pathname === "/about"
+        ? translations[nextLocale].aboutPage.metadata
+        : translations[nextLocale].metadata;
+    document.title = metadata.title;
     document
       .querySelector('meta[name="description"]')
-      ?.setAttribute("content", translations[nextLocale].metadata.description);
+      ?.setAttribute("content", metadata.description);
     setCurrentLocale(nextLocale);
   }, []);
 

@@ -2,9 +2,8 @@
 
 import { useLanguage } from "./components/LanguageProvider";
 import ProfilePortrait from "./components/ProfilePortrait";
+import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
-
-const currentYear = new Date().getFullYear();
 
 const skillIcons = [
   <svg key="requirements" viewBox="0 0 24 24" aria-hidden="true">
@@ -173,7 +172,7 @@ export default function Home() {
                 <span className="text-muted">{t.about.headingSecond}</span>
               </h2>
               <p>{t.about.description}</p>
-              <a className="text-link" href="#skills">
+              <a className="text-link" href="/about">
                 {t.about.moreLink} <ArrowIcon />
               </a>
             </div>
@@ -342,25 +341,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="page-shell footer-inner">
-          <a
-            className="footer-brand"
-            href="#home"
-            aria-label={t.footer.brandHomeAriaLabel}
-          >
-            TDM <span>GLUZ</span>
-            <i aria-hidden="true" />
-          </a>
-          <p>{t.footer.motto}</p>
-          <div className="footer-meta">
-            <span>© {currentYear} TDM GLUZ</span>
-            <a href="#home">
-              {t.footer.backToTop} <span aria-hidden="true">↑</span>
-            </a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
