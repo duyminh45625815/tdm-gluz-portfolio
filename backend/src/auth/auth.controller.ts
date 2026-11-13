@@ -6,9 +6,8 @@ import {
   HttpStatus,
   Post,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import type { AdminPublicDto } from '../admin-users/admin-user.dto.js';
 import { AuthService } from './auth.service.js';
 import { CurrentAdmin } from './current-admin.decorator.js';
@@ -21,13 +20,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UsePipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  )
+  @UseGuards(ThrottlerGuard)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
   }

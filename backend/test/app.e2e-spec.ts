@@ -1,22 +1,69 @@
+import { Global, INestApplication, Module } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import { getModelToken } from '@nestjs/mongoose';
+import { getConnectionToken, getModelToken } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { Types } from 'mongoose';
 import { vi } from 'vitest';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
+import { AppController } from './../src/app.controller.js';
+import { AppService } from './../src/app.service.js';
 import { ADMIN_USER_MODEL } from './../src/admin-users/admin-user.schema.js';
+import { configureApplication } from './../src/app-setup.js';
+import { AdminUsersModule } from './../src/admin-users/admin-users.module.js';
+import { AuthModule } from './../src/auth/auth.module.js';
+import { EducationModule } from './../src/education/education.module.js';
 import { EDUCATION_MODEL } from './../src/education/education.schema.js';
-import { AppModule } from './../src/app.module.js';
+import { HealthModule } from './../src/health/health.module.js';
+import { PagesModule } from './../src/pages/pages.module.js';
 import { PAGE_MODEL } from './../src/pages/page.schema.js';
+import { ProjectsModule } from './../src/projects/projects.module.js';
 import { PROJECT_MODEL } from './../src/projects/project.schema.js';
+import { SiteSettingsModule } from './../src/site-settings/site-settings.module.js';
 import { SITE_SETTINGS_MODEL } from './../src/site-settings/site-settings.schema.js';
+import { SkillGroupsModule } from './../src/skill-groups/skill-groups.module.js';
 import { SKILL_GROUP_MODEL } from './../src/skill-groups/skill-group.schema.js';
 
 const TEST_JWT_SECRET = 'test-only-jwt-secret-with-sufficient-length-32-bytes';
 const TEST_ADMIN_PASSWORD = 'local-test-password-2026';
+const testConnection = {
+  readyState: 1,
+  models: {},
+  model: vi.fn(() => ({})),
+  close: vi.fn().mockResolvedValue(undefined),
+};
+
+@Global()
+@Module({
+  providers: [
+    {
+      provide: getConnectionToken(),
+      useValue: testConnection,
+    },
+  ],
+  exports: [getConnectionToken()],
+})
+class TestDatabaseModule {}
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }),
+    TestDatabaseModule,
+    HealthModule,
+    SiteSettingsModule,
+    PagesModule,
+    ProjectsModule,
+    SkillGroupsModule,
+    EducationModule,
+    AdminUsersModule,
+    AuthModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+class TestAppModule {}
 
 interface TestAdmin {
   _id: Types.ObjectId;
@@ -38,7 +85,6 @@ function createQuery<T>(value: T) {
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App> | undefined;
-  let previousJwtSecret: string | undefined;
   let admin: TestAdmin;
   let lookupAdmin: TestAdmin | null;
   let updatedAdmin: TestAdmin | null;
@@ -48,9 +94,6 @@ describe('AppController (e2e)', () => {
   };
 
   beforeEach(async () => {
-    previousJwtSecret = process.env.JWT_SECRET;
-    process.env.JWT_SECRET = TEST_JWT_SECRET;
-
     const passwordHash = await argon2.hash(TEST_ADMIN_PASSWORD, {
       type: argon2.argon2id,
     });
@@ -65,19 +108,35 @@ describe('AppController (e2e)', () => {
     lookupAdmin = admin;
     updatedAdmin = { ...admin, lastLoginAt: new Date() };
     adminModel = {
-      findOne: vi.fn(() => createQuery(lookupAdmin)),
+      findOne: vi.fn((filter: Record<string, unknown>) =>
+        createQuery(
+          filter.isActive === true && lookupAdmin?.isActive === false
+            ? null
+            : lookupAdmin,
+        ),
+      ),
       findOneAndUpdate: vi.fn(() => createQuery(updatedAdmin)),
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     })
+      .overrideProvider(ConfigService)
+      .useValue(
+        new ConfigService({
+          NODE_ENV: 'test',
+          JWT_SECRET: TEST_JWT_SECRET,
+          CORS_ALLOWED_ORIGINS: ['http://localhost:3000'],
+          LOGIN_RATE_LIMIT_MAX: 3,
+          LOGIN_RATE_LIMIT_TTL_MS: 100,
+        }),
+      )
       .overrideProvider(getModelToken(ADMIN_USER_MODEL))
       .useValue(adminModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api');
+    configureApplication(app, app.get(ConfigService));
     await app.init();
   });
 
@@ -215,18 +274,103 @@ describe('AppController (e2e)', () => {
       .post('/api/auth/login')
       .send({ email: 'not-an-email', password: '' })
       .expect(400);
+
+    await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({
+        email: 'admin@example.test',
+        password: TEST_ADMIN_PASSWORD,
+        role: 'admin',
+      })
+      .expect(400);
+  });
+
+  it('limits login attempts by client IP without throttling the health route', async () => {
+    const submitInvalidLogin = () =>
+      request(app!.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'bad', password: '' });
+
+    await submitInvalidLogin().expect(400);
+    await submitInvalidLogin().expect(400);
+    await submitInvalidLogin().expect(400);
+
+    const limited = await submitInvalidLogin().expect(429);
+
+    expect(limited.body).toEqual({
+      statusCode: 429,
+      message: 'Too many login attempts. Please try again later.',
+    });
+    await request(app!.getHttpServer()).get('/api/health').expect(200);
+  });
+
+  it('counts successful login requests and resets the login limit after its window', async () => {
+    await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: admin.email, password: TEST_ADMIN_PASSWORD })
+      .expect(200);
+    await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'bad', password: '' })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'bad', password: '' })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'bad', password: '' })
+      .expect(429);
+
+    await new Promise((resolve) => setTimeout(resolve, 1_100));
+
+    await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'bad', password: '' })
+      .expect(400);
+  });
+
+  it('applies configured CORS and security headers', async () => {
+    const allowedOrigin = await request(app!.getHttpServer())
+      .get('/api/health')
+      .set('Origin', 'http://localhost:3000')
+      .expect(200);
+
+    expect(allowedOrigin.headers['access-control-allow-origin']).toBe(
+      'http://localhost:3000',
+    );
+    expect(allowedOrigin.headers['x-content-type-options']).toBe('nosniff');
+    expect(allowedOrigin.headers['x-frame-options']).toBe('SAMEORIGIN');
+    expect(allowedOrigin.headers['x-powered-by']).toBeUndefined();
+
+    const unconfiguredOrigin = await request(app!.getHttpServer())
+      .get('/api/health')
+      .set('Origin', 'https://unconfigured.example')
+      .expect(200);
+
+    expect(
+      unconfiguredOrigin.headers['access-control-allow-origin'],
+    ).toBeUndefined();
+  });
+
+  it('rejects a token after its admin account is deactivated', async () => {
+    const login = await request(app!.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: admin.email, password: TEST_ADMIN_PASSWORD })
+      .expect(200);
+
+    lookupAdmin = { ...admin, isActive: false };
+
+    await request(app!.getHttpServer())
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .expect(401);
   });
 
   afterEach(async () => {
     if (app) {
       await app.close();
       app = undefined;
-    }
-
-    if (previousJwtSecret === undefined) {
-      delete process.env.JWT_SECRET;
-    } else {
-      process.env.JWT_SECRET = previousJwtSecret;
     }
   });
 });

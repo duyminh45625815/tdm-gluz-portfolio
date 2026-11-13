@@ -110,6 +110,28 @@ in the service layer; only the hash is persisted.
 Login and `/auth/me` return a safe admin DTO. Keep that DTO boundary in future
 public endpoints; do not return admin documents or use raw lean admin results.
 
+## HTTP security configuration
+
+The API validates `MONGODB_URI`, `JWT_SECRET`, `PORT`, `LOGIN_RATE_LIMIT_MAX`,
+`LOGIN_RATE_LIMIT_TTL_MS`, and `CORS_ALLOWED_ORIGINS` at startup. The login
+limit defaults to 5 requests per client IP in 60 seconds. Configure the
+comma-separated `CORS_ALLOWED_ORIGINS` with exact HTTP(S) origins in production;
+production startup fails if it is missing. Development and tests default to
+`http://localhost:3000` and `http://127.0.0.1:3000`.
+
+Login throttling uses Nest's in-memory store, so its counts are per application
+instance and reset on restart. A multi-instance deployment needs a shared
+throttler store before relying on a global limit. The Express proxy trust
+setting remains disabled by default, so untrusted `X-Forwarded-For` headers
+are not used to identify clients. If deployed behind a reverse proxy, configure
+Express to trust only the known proxy IPs or CIDRs after ensuring that proxy
+overwrites forwarded headers; do not trust arbitrary clients or a blind hop
+count.
+
+The application enables Nest's built-in security headers and a global
+validation pipe. Internal server errors return a generic response and log no
+exception details that could contain credentials or connection strings.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

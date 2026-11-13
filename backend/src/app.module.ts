@@ -13,6 +13,7 @@ import { PagesModule } from './pages/pages.module.js';
 import { ProjectsModule } from './projects/projects.module.js';
 import { SiteSettingsModule } from './site-settings/site-settings.module.js';
 import { SkillGroupsModule } from './skill-groups/skill-groups.module.js';
+import { validateEnvironment } from './config/environment.js';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { SkillGroupsModule } from './skill-groups/skill-groups.module.js';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
+      validate: validateEnvironment,
     }),
 
     // Connect to MongoDB Atlas
