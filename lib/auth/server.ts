@@ -20,14 +20,27 @@ export type AdminSessionResult =
   | { status: "unavailable" }
   | { status: "authenticated"; admin: AdminPublic; expiresAt: number };
 
+export type AdminApiSessionResult =
+  | Exclude<AdminSessionResult, { status: "authenticated" }>
+  | {
+      status: "authenticated";
+      admin: AdminPublic;
+      expiresAt: number;
+      accessToken: string;
+    };
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-export function getBackendAuthUrl(path: "login" | "me"): URL | null {
+export function getBackendApiUrl(path: string): URL | null {
   const configuredUrl = process.env.BACKEND_API_URL;
 
-  if (!configuredUrl) {
+  if (
+    !configuredUrl ||
+    !/^\/api\/[A-Za-z0-9/_-]+$/.test(path) ||
+    path.includes("//")
+  ) {
     return null;
   }
 
@@ -44,10 +57,14 @@ export function getBackendAuthUrl(path: "login" | "me"): URL | null {
     }
 
     const basePath = baseUrl.pathname.replace(/\/+$/, "");
-    return new URL(`${basePath}/api/auth/${path}`, baseUrl.origin);
+    return new URL(`${basePath}${path}`, baseUrl.origin);
   } catch {
     return null;
   }
+}
+
+export function getBackendAuthUrl(path: "login" | "me"): URL | null {
+  return getBackendApiUrl(`/api/auth/${path}`);
 }
 
 export function isSameOriginRequest(request: Request): boolean {
@@ -173,9 +190,29 @@ export async function verifyAdminToken(
   return { status: "authenticated", admin, expiresAt };
 }
 
-export async function getAdminSession(): Promise<AdminSessionResult> {
+export async function getAdminApiSession(): Promise<AdminApiSessionResult> {
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
-  return token ? verifyAdminToken(token) : { status: "missing" };
+  if (!token) {
+    return { status: "missing" };
+  }
+
+  const session = await verifyAdminToken(token);
+  return session.status === "authenticated"
+    ? { ...session, accessToken: token }
+    : session;
+}
+
+export async function getAdminSession(): Promise<AdminSessionResult> {
+  const session = await getAdminApiSession();
+  if (session.status === "authenticated") {
+    return {
+      status: "authenticated",
+      admin: session.admin,
+      expiresAt: session.expiresAt,
+    };
+  }
+
+  return session;
 }
 
 export function setAdminSessionCookie(

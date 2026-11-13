@@ -1,7 +1,7 @@
 import { getAdminSession } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
+import AdminShell from "../AdminShell";
 import ExpiredSessionRedirect from "../ExpiredSessionRedirect";
-import LogoutButton from "../LogoutButton";
 
 export const instant = false;
 
@@ -27,20 +27,8 @@ export default async function ProtectedAdminLayout({
   }
 
   return (
-    <div className="admin-shell">
-      <header className="admin-header">
-        <a className="admin-login-brand" href="/admin">
-          TDM GLUZ<span>.</span> <small>ADMIN</small>
-        </a>
-        <div className="admin-account">
-          <div>
-            <span>{session.admin.email}</span>
-            <small>{session.admin.role}</small>
-          </div>
-          <LogoutButton expiresAt={session.expiresAt} />
-        </div>
-      </header>
-      <main className="admin-content">{children}</main>
-    </div>
+    <AdminShell admin={session.admin} expiresAt={session.expiresAt}>
+      {children}
+    </AdminShell>
   );
 }
