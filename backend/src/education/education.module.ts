@@ -5,6 +5,8 @@ import {
   EDUCATION_MODEL,
   EducationSchema,
 } from './education.schema.js';
+import { EducationAdminController } from './education-admin.controller.js';
+import { EducationAdminService } from './education-admin.service.js';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import {
       },
     ]),
   ],
+  controllers: [EducationAdminController],
+  providers: [EducationAdminService],
   exports: [MongooseModule],
 })
 export class EducationModule {}

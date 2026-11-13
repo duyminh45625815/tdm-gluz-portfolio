@@ -430,6 +430,99 @@ function createSkillGroupModelHarness(
   });
 }
 
+function createEducationModelHarness(
+  getRecords: () => Record<string, unknown>[],
+  setRecords: (records: Record<string, unknown>[]) => void,
+) {
+  function EducationModel(
+    this: { validate: ReturnType<typeof vi.fn> },
+    _education: Record<string, unknown>,
+  ) {
+    this.validate = vi.fn().mockResolvedValue(undefined);
+  }
+
+  function queryFor<T>(value: T) {
+    const query = createQuery(value);
+    return Object.assign(query, {
+      sort: vi.fn(() => query),
+    });
+  }
+
+  return Object.assign(EducationModel, {
+    find: vi.fn(() =>
+      queryFor(getRecords().map((record) => createPageDocument(record))),
+    ),
+    findOne: vi.fn((filter: { _id: string }) => {
+      const record = getRecords().find(
+        (education) => String(education._id) === filter._id,
+      );
+      return queryFor(record ? createPageDocument(record) : null);
+    }),
+    create: vi.fn(async (input: Record<string, unknown>) => {
+      const record = {
+        ...input,
+        _id: '507f1f77bcf86cd799439011',
+        __v: 0,
+        presentations: {
+          home: false,
+          about: false,
+          ...(input.presentations as Record<string, unknown> | undefined),
+        },
+        displayOrder:
+          typeof input.displayOrder === 'number' ? input.displayOrder : 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setRecords([...getRecords(), record]);
+      return createPageDocument(record);
+    }),
+    findOneAndUpdate: vi.fn(
+      (filter: { _id: string }, update: unknown) => {
+        const records = getRecords();
+        const index = records.findIndex(
+          (record) => String(record._id) === filter._id,
+        );
+        if (index < 0) {
+          return queryFor(null);
+        }
+
+        const updates = Array.isArray(update)
+          ? Object.fromEntries(
+              Object.entries(
+                (update[0] as { $set: Record<string, unknown> }).$set,
+              ).map(([path, value]) => [
+                path,
+                typeof value === 'string' && value.startsWith('$')
+                  ? readDottedValue(records[index], value.slice(1))
+                  : value,
+              ]),
+            )
+          : (update as { $set: Record<string, unknown> }).$set;
+        const updated = applyDottedSet(records[index], updates);
+        setRecords(
+          records.map((record, recordIndex) =>
+            recordIndex === index ? updated : record,
+          ),
+        );
+        return queryFor(createPageDocument(updated));
+      },
+    ),
+    findOneAndDelete: vi.fn((filter: { _id: string }) => {
+      const records = getRecords();
+      const index = records.findIndex(
+        (record) => String(record._id) === filter._id,
+      );
+      if (index < 0) {
+        return queryFor(null);
+      }
+
+      const [deleted] = records.splice(index, 1);
+      setRecords(records);
+      return queryFor(createPageDocument(deleted));
+    }),
+  });
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App> | undefined;
   let admin: TestAdmin;
@@ -442,6 +535,8 @@ describe('AppController (e2e)', () => {
   let projectModel: ReturnType<typeof createProjectModelHarness>;
   let skillGroupState: Record<string, unknown>[];
   let skillGroupModel: ReturnType<typeof createSkillGroupModelHarness>;
+  let educationState: Record<string, unknown>[];
+  let educationModel: ReturnType<typeof createEducationModelHarness>;
   let adminModel: {
     findOne: ReturnType<typeof vi.fn>;
     findOneAndUpdate: ReturnType<typeof vi.fn>;
@@ -480,6 +575,7 @@ describe('AppController (e2e)', () => {
     pageState = null;
     projectState = [];
     skillGroupState = [];
+    educationState = [];
     pageModel = createPageModelHarness(
       () => pageState,
       (page) => {
@@ -496,6 +592,12 @@ describe('AppController (e2e)', () => {
       () => skillGroupState,
       (skillGroups) => {
         skillGroupState = skillGroups;
+      },
+    );
+    educationModel = createEducationModelHarness(
+      () => educationState,
+      (records) => {
+        educationState = records;
       },
     );
     adminModel = {
@@ -572,6 +674,8 @@ describe('AppController (e2e)', () => {
       .useValue(projectModel)
       .overrideProvider(getModelToken(SKILL_GROUP_MODEL))
       .useValue(skillGroupModel)
+      .overrideProvider(getModelToken(EDUCATION_MODEL))
+      .useValue(educationModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -1611,6 +1715,126 @@ describe('AppController (e2e)', () => {
       .expect(204);
     await request(app!.getHttpServer())
       .get('/api/admin/skill-groups/development')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
+  });
+
+  it('requires an admin JWT for Education management routes', async () => {
+    await request(app!.getHttpServer()).get('/api/admin/education').expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/education')
+      .send({ type: 'course' })
+      .expect(401);
+
+    const nonAdminToken = await createNonAdminToken();
+    await request(app!.getHttpServer())
+      .get('/api/admin/education')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+    await request(app!.getHttpServer())
+      .delete('/api/admin/education/507f1f77bcf86cd799439011')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+  });
+
+  it('supports Education CRUD, localized drafts, date ranges, and validation', async () => {
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const created = await request(app!.getHttpServer())
+      .post('/api/admin/education')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        type: 'university',
+        startDate: '2020-01-01',
+        endDate: '2024-01-01',
+        displayOrder: 1,
+        presentations: { home: true, about: false },
+      })
+      .expect(201);
+    const id = '507f1f77bcf86cd799439011';
+    expect(created.body).toMatchObject({
+      id,
+      type: 'university',
+      startDate: '2020-01-01T00:00:00.000Z',
+      endDate: '2024-01-01T00:00:00.000Z',
+      displayOrder: 1,
+      presentations: { home: true, about: false },
+    });
+    expect(created.body).not.toHaveProperty('_id');
+    expect(created.body).not.toHaveProperty('__v');
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/education')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        type: 'course',
+        startDate: '2024-01-01',
+        endDate: '2020-01-01',
+      })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .get('/api/admin/education')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toHaveLength(1);
+        expect(body[0].id).toBe(id);
+      });
+    await request(app!.getHttpServer())
+      .get(`/api/admin/education/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const updated = await request(app!.getHttpServer())
+      .patch(`/api/admin/education/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ endDate: '2025-01-01', presentations: { about: true } })
+      .expect(200);
+    expect(updated.body.endDate).toBe('2025-01-01T00:00:00.000Z');
+    expect(updated.body.presentations).toEqual({ home: true, about: true });
+
+    await request(app!.getHttpServer())
+      .patch(`/api/admin/education/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startDate: '2026-01-01' })
+      .expect(400);
+
+    const draft = await request(app!.getHttpServer())
+      .patch(`/api/admin/education/${id}/draft/vi`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ institution: 'Vietnamese university', title: 'Degree' })
+      .expect(200);
+    expect(draft.body.draft.vi).toEqual({
+      institution: 'Vietnamese university',
+      title: 'Degree',
+    });
+    const published = await request(app!.getHttpServer())
+      .post(`/api/admin/education/${id}/publish/vi`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(published.body.published.vi).toEqual(draft.body.draft.vi);
+
+    await request(app!.getHttpServer())
+      .patch(`/api/admin/education/${id}/draft/en`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'Known', unexpected: true })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .patch(`/api/admin/education/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ _id: 'client-controlled-id' })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .delete(`/api/admin/education/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
+    await request(app!.getHttpServer())
+      .get(`/api/admin/education/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(404);
   });
