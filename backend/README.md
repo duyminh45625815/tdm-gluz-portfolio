@@ -119,9 +119,9 @@ comma-separated `CORS_ALLOWED_ORIGINS` with exact HTTP(S) origins in production;
 production startup fails if it is missing. Development and tests default to
 `http://localhost:3000` and `http://127.0.0.1:3000`.
 
-Login throttling uses Nest's in-memory store, so its counts are per application
-instance and reset on restart. A multi-instance deployment needs a shared
-throttler store before relying on a global limit. The Express proxy trust
+Login throttling uses an in-memory sliding-window store, so its counts are per
+application instance and reset on restart. A multi-instance deployment needs a
+shared rate-limit store before relying on a global limit. The Express proxy trust
 setting remains disabled by default, so untrusted `X-Forwarded-For` headers
 are not used to identify clients. If deployed behind a reverse proxy, configure
 Express to trust only the known proxy IPs or CIDRs after ensuring that proxy

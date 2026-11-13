@@ -7,12 +7,12 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import type { AdminPublicDto } from '../admin-users/admin-user.dto.js';
 import { AuthService } from './auth.service.js';
 import { CurrentAdmin } from './current-admin.decorator.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { LoginDto } from './auth.dto.js';
+import { LoginRateLimitGuard } from './login-rate-limit.guard.js';
 
 @Controller('auth')
 export class AuthController {
@@ -20,7 +20,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(ThrottlerGuard)
+  @UseGuards(LoginRateLimitGuard)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
   }
