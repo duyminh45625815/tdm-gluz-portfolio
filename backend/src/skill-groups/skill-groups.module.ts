@@ -5,6 +5,8 @@ import {
   SKILL_GROUP_MODEL,
   SkillGroupSchema,
 } from './skill-group.schema.js';
+import { SkillGroupAdminController } from './skill-group-admin.controller.js';
+import { SkillGroupAdminService } from './skill-group-admin.service.js';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import {
       },
     ]),
   ],
+  controllers: [SkillGroupAdminController],
+  providers: [SkillGroupAdminService],
   exports: [MongooseModule],
 })
 export class SkillGroupsModule {}

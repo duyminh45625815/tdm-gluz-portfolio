@@ -328,6 +328,108 @@ function createProjectModelHarness(
   });
 }
 
+function createSkillGroupModelHarness(
+  getSkillGroups: () => Record<string, unknown>[],
+  setSkillGroups: (skillGroups: Record<string, unknown>[]) => void,
+) {
+  function SkillGroupModel(
+    this: { validate: ReturnType<typeof vi.fn> },
+    _skillGroup: Record<string, unknown>,
+  ) {
+    this.validate = vi.fn().mockResolvedValue(undefined);
+  }
+
+  function queryFor<T>(value: T) {
+    const query = createQuery(value);
+    return Object.assign(query, {
+      sort: vi.fn(() => query),
+    });
+  }
+
+  return Object.assign(SkillGroupModel, {
+    init: vi.fn().mockResolvedValue(undefined),
+    find: vi.fn(() =>
+      queryFor(
+        getSkillGroups().map((skillGroup) =>
+          createPageDocument(skillGroup),
+        ),
+      ),
+    ),
+    findOne: vi.fn((filter: { key: string }) => {
+      const skillGroup = getSkillGroups().find(
+        (item) => item.key === filter.key,
+      );
+      return queryFor(skillGroup ? createPageDocument(skillGroup) : null);
+    }),
+    create: vi.fn(async (input: Record<string, unknown>) => {
+      if (getSkillGroups().some((item) => item.key === input.key)) {
+        throw { code: 11000 };
+      }
+
+      const skillGroup = {
+        ...input,
+        _id: `skill-group-${getSkillGroups().length + 1}`,
+        __v: 0,
+        presentations: {
+          home: false,
+          about: false,
+          ...(input.presentations as Record<string, unknown> | undefined),
+        },
+        displayOrder:
+          typeof input.displayOrder === 'number' ? input.displayOrder : 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setSkillGroups([...getSkillGroups(), skillGroup]);
+      return createPageDocument(skillGroup);
+    }),
+    findOneAndUpdate: vi.fn(
+      (filter: { key: string }, update: unknown) => {
+        const skillGroups = getSkillGroups();
+        const index = skillGroups.findIndex(
+          (skillGroup) => skillGroup.key === filter.key,
+        );
+        if (index < 0) {
+          return queryFor(null);
+        }
+
+        const updates = Array.isArray(update)
+          ? Object.fromEntries(
+              Object.entries(
+                (update[0] as { $set: Record<string, unknown> }).$set,
+              ).map(([path, value]) => [
+                path,
+                typeof value === 'string' && value.startsWith('$')
+                  ? readDottedValue(skillGroups[index], value.slice(1))
+                  : value,
+              ]),
+            )
+          : (update as { $set: Record<string, unknown> }).$set;
+        const updated = applyDottedSet(skillGroups[index], updates);
+        setSkillGroups(
+          skillGroups.map((skillGroup, skillGroupIndex) =>
+            skillGroupIndex === index ? updated : skillGroup,
+          ),
+        );
+        return queryFor(createPageDocument(updated));
+      },
+    ),
+    findOneAndDelete: vi.fn((filter: { key: string }) => {
+      const skillGroups = getSkillGroups();
+      const index = skillGroups.findIndex(
+        (skillGroup) => skillGroup.key === filter.key,
+      );
+      if (index < 0) {
+        return queryFor(null);
+      }
+
+      const [deleted] = skillGroups.splice(index, 1);
+      setSkillGroups(skillGroups);
+      return queryFor(createPageDocument(deleted));
+    }),
+  });
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App> | undefined;
   let admin: TestAdmin;
@@ -338,6 +440,8 @@ describe('AppController (e2e)', () => {
   let pageModel: ReturnType<typeof createPageModelHarness>;
   let projectState: Record<string, unknown>[];
   let projectModel: ReturnType<typeof createProjectModelHarness>;
+  let skillGroupState: Record<string, unknown>[];
+  let skillGroupModel: ReturnType<typeof createSkillGroupModelHarness>;
   let adminModel: {
     findOne: ReturnType<typeof vi.fn>;
     findOneAndUpdate: ReturnType<typeof vi.fn>;
@@ -375,6 +479,7 @@ describe('AppController (e2e)', () => {
     siteSettingsState = null;
     pageState = null;
     projectState = [];
+    skillGroupState = [];
     pageModel = createPageModelHarness(
       () => pageState,
       (page) => {
@@ -385,6 +490,12 @@ describe('AppController (e2e)', () => {
       () => projectState,
       (projects) => {
         projectState = projects;
+      },
+    );
+    skillGroupModel = createSkillGroupModelHarness(
+      () => skillGroupState,
+      (skillGroups) => {
+        skillGroupState = skillGroups;
       },
     );
     adminModel = {
@@ -459,6 +570,8 @@ describe('AppController (e2e)', () => {
       .useValue(pageModel)
       .overrideProvider(getModelToken(PROJECT_MODEL))
       .useValue(projectModel)
+      .overrideProvider(getModelToken(SKILL_GROUP_MODEL))
+      .useValue(skillGroupModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -1387,6 +1500,117 @@ describe('AppController (e2e)', () => {
       .expect(204);
     await request(app!.getHttpServer())
       .get('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
+  });
+
+  it('requires an admin JWT for Skill Group management routes', async () => {
+    await request(app!.getHttpServer())
+      .get('/api/admin/skill-groups')
+      .expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/skill-groups')
+      .send({ key: 'development' })
+      .expect(401);
+
+    const nonAdminToken = await createNonAdminToken();
+    await request(app!.getHttpServer())
+      .get('/api/admin/skill-groups')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+    await request(app!.getHttpServer())
+      .delete('/api/admin/skill-groups/development')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+  });
+
+  it('supports Skill Group CRUD, localized drafts, publishing, and validation', async () => {
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const created = await request(app!.getHttpServer())
+      .post('/api/admin/skill-groups')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        key: 'development',
+        displayOrder: 1,
+        presentations: { home: true, about: false },
+      })
+      .expect(201);
+    expect(created.body).toMatchObject({
+      key: 'development',
+      displayOrder: 1,
+      presentations: { home: true, about: false },
+    });
+    expect(created.body).not.toHaveProperty('_id');
+    expect(created.body).not.toHaveProperty('__v');
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/skill-groups')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ key: 'development' })
+      .expect(409);
+    await request(app!.getHttpServer())
+      .get('/api/admin/skill-groups')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toHaveLength(1);
+        expect(body[0].key).toBe('development');
+      });
+    await request(app!.getHttpServer())
+      .get('/api/admin/skill-groups/development')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const updated = await request(app!.getHttpServer())
+      .patch('/api/admin/skill-groups/development')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ displayOrder: 2, presentations: { about: true } })
+      .expect(200);
+    expect(updated.body.displayOrder).toBe(2);
+    expect(updated.body.presentations).toEqual({ home: true, about: true });
+
+    const draft = await request(app!.getHttpServer())
+      .patch('/api/admin/skill-groups/development/draft/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ home: { title: 'Development', items: ['TypeScript', 'Node.js'] } })
+      .expect(200);
+    expect(draft.body.draft.vi).toEqual({
+      home: { title: 'Development', items: ['TypeScript', 'Node.js'] },
+    });
+
+    const published = await request(app!.getHttpServer())
+      .post('/api/admin/skill-groups/development/publish/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(published.body.published.vi).toEqual(draft.body.draft.vi);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/skill-groups/development/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ home: { title: 'Allowed', unknown: true } })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .patch('/api/admin/skill-groups/development')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ presentations: { home: 'yes' } })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .post('/api/admin/skill-groups')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ key: 'Invalid Key' })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .delete('/api/admin/skill-groups/development')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
+    await request(app!.getHttpServer())
+      .get('/api/admin/skill-groups/development')
       .set('Authorization', `Bearer ${token}`)
       .expect(404);
   });
