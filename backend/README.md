@@ -88,10 +88,27 @@ validation. Services should validate and save documents, or explicitly enforce
 the same rules before update operations that bypass document validation.
 
 `adminUsers.passwordHash` is excluded from normal selection and stripped by
-Mongoose document serialization. Future services must hash passwords with
-Argon2 or bcrypt before persistence. Public APIs must return an explicit safe
-DTO and must never return the raw admin document or a lean result containing
-`passwordHash`.
+Mongoose document serialization. Its schema accepts only Argon2id hash
+encodings. Passwords must be hashed in the service layer before persistence.
+Public APIs must return an explicit safe DTO and must never return the raw
+admin document or a lean result containing `passwordHash`.
+
+## Admin authentication
+
+Authentication requires the `JWT_SECRET` environment variable. Configure it
+outside source control with at least 32 characters; the application fails to
+start if it is missing or too short. Access tokens use HS256 and expire after
+15 minutes.
+
+Run `npm run admin:create` from the backend directory in an interactive
+terminal to provision an admin account. The script asks for an email and
+password interactively, hides password input, confirms it, hashes it with
+Argon2id and refuses an existing email. It is not run at application startup
+and accepts no credentials as command-line arguments. Password hashing stays
+in the service layer; only the hash is persisted.
+
+Login and `/auth/me` return a safe admin DTO. Keep that DTO boundary in future
+public endpoints; do not return admin documents or use raw lean admin results.
 
 ## Deployment
 

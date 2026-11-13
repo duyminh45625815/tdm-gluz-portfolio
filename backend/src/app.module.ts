@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AdminUsersModule } from './admin-users/admin-users.module.js';
+import { AuthModule } from './auth/auth.module.js';
 import { EducationModule } from './education/education.module.js';
 import { HealthModule } from './health/health.module.js';
 import { PagesModule } from './pages/pages.module.js';
@@ -35,6 +36,7 @@ import { SkillGroupsModule } from './skill-groups/skill-groups.module.js';
     SkillGroupsModule,
     EducationModule,
     AdminUsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

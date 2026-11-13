@@ -5,6 +5,8 @@ import {
   ADMIN_USER_MODEL,
   AdminUserSchema,
 } from './admin-user.schema.js';
+import { AdminProvisioningService } from './admin-provisioning.service.js';
+import { PasswordHashService } from './password-hash.service.js';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import {
       },
     ]),
   ],
-  exports: [MongooseModule],
+  providers: [AdminProvisioningService, PasswordHashService],
+  exports: [MongooseModule, AdminProvisioningService, PasswordHashService],
 })
 export class AdminUsersModule {}

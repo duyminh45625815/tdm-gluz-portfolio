@@ -1,4 +1,5 @@
 import { Schema, type HydratedDocument } from 'mongoose';
+import { ARGON2ID_HASH_PATTERN } from './admin-user.utils.js';
 
 export const ADMIN_USER_MODEL = 'AdminUser';
 export const ADMIN_USER_COLLECTION = 'adminUsers';
@@ -28,7 +29,13 @@ export const AdminUserSchema = new Schema<AdminUser>(
       lowercase: true,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
-    passwordHash: { type: String, required: true, select: false, trim: true },
+    passwordHash: {
+      type: String,
+      required: true,
+      select: false,
+      trim: true,
+      match: ARGON2ID_HASH_PATTERN,
+    },
     role: { type: String, enum: ['admin'], required: true, default: 'admin' },
     isActive: { type: Boolean, required: true, default: true },
     lastLoginAt: { type: Date },

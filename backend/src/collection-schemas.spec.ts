@@ -218,5 +218,10 @@ describe('collection schemas', () => {
     });
     expect(adminWithHash.toJSON()).not.toHaveProperty('passwordHash');
     expect(adminWithHash.toObject()).not.toHaveProperty('passwordHash');
+    await expect(adminWithHash.validate()).rejects.toMatchObject({
+      errors: expect.objectContaining({
+        passwordHash: expect.any(Object),
+      }),
+    });
   });
 });
