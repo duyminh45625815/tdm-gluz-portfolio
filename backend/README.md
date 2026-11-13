@@ -132,6 +132,15 @@ The application enables Nest's built-in security headers and a global
 validation pipe. Internal server errors return a generic response and log no
 exception details that could contain credentials or connection strings.
 
+## Site Settings Admin API
+
+Authenticated administrators can manage the singleton settings at
+`/api/admin/site-settings`: `GET` retrieves it, `POST` creates it once, and
+`PATCH` updates provided fields. Updates target individual localized values so
+other locales remain intact. The existing Site Settings schema has no
+`draft`/`published` fields, so settings updates apply directly; no delete or
+publish endpoint is provided.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

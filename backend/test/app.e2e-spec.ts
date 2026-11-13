@@ -22,7 +22,10 @@ import { PAGE_MODEL } from './../src/pages/page.schema.js';
 import { ProjectsModule } from './../src/projects/projects.module.js';
 import { PROJECT_MODEL } from './../src/projects/project.schema.js';
 import { SiteSettingsModule } from './../src/site-settings/site-settings.module.js';
-import { SITE_SETTINGS_MODEL } from './../src/site-settings/site-settings.schema.js';
+import {
+  SITE_SETTINGS_MODEL,
+  type SiteSettings as SiteSettingsModel,
+} from './../src/site-settings/site-settings.schema.js';
 import { SkillGroupsModule } from './../src/skill-groups/skill-groups.module.js';
 import { SKILL_GROUP_MODEL } from './../src/skill-groups/skill-group.schema.js';
 
@@ -83,15 +86,89 @@ function createQuery<T>(value: T) {
   return query;
 }
 
+function createSiteSettingsDocument(settings: Record<string, unknown>) {
+  return {
+    toObject: vi.fn(() => flattenTestValue(settings)),
+  };
+}
+
+function flattenTestValue(value: unknown): unknown {
+  if (value instanceof Map) {
+    return Object.fromEntries(
+      Array.from(value.entries(), ([key, item]) => [
+        key,
+        flattenTestValue(item),
+      ]),
+    );
+  }
+  if (Array.isArray(value)) {
+    return value.map(flattenTestValue);
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        flattenTestValue(item),
+      ]),
+    );
+  }
+
+  return value;
+}
+
+function applyDottedSet(
+  source: Record<string, unknown>,
+  updates: Record<string, unknown>,
+): Record<string, unknown> {
+  const updated = structuredClone(source);
+
+  for (const [path, value] of Object.entries(updates)) {
+    const segments = path.split('.');
+    let current = updated;
+
+    for (const segment of segments.slice(0, -1)) {
+      const nested = current[segment];
+      if (
+        typeof nested !== 'object' ||
+        nested === null ||
+        Array.isArray(nested)
+      ) {
+        current[segment] = {};
+      }
+      current = current[segment] as Record<string, unknown>;
+    }
+
+    current[segments[segments.length - 1]] = value;
+  }
+
+  return updated;
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App> | undefined;
   let admin: TestAdmin;
   let lookupAdmin: TestAdmin | null;
   let updatedAdmin: TestAdmin | null;
+  let siteSettingsState: Record<string, unknown> | null;
   let adminModel: {
     findOne: ReturnType<typeof vi.fn>;
     findOneAndUpdate: ReturnType<typeof vi.fn>;
   };
+  let siteSettingsModel: {
+    init: ReturnType<typeof vi.fn>;
+    exists: ReturnType<typeof vi.fn>;
+    findOne: ReturnType<typeof vi.fn>;
+    create: ReturnType<typeof vi.fn>;
+    findOneAndUpdate: ReturnType<typeof vi.fn>;
+  };
+
+  async function createNonAdminToken(): Promise<string> {
+    const jwtService = app!.get(JwtService, { strict: false });
+    return jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'editor',
+    });
+  }
 
   beforeEach(async () => {
     const passwordHash = await argon2.hash(TEST_ADMIN_PASSWORD, {
@@ -107,6 +184,7 @@ describe('AppController (e2e)', () => {
     };
     lookupAdmin = admin;
     updatedAdmin = { ...admin, lastLoginAt: new Date() };
+    siteSettingsState = null;
     adminModel = {
       findOne: vi.fn((filter: Record<string, unknown>) =>
         createQuery(
@@ -116,6 +194,46 @@ describe('AppController (e2e)', () => {
         ),
       ),
       findOneAndUpdate: vi.fn(() => createQuery(updatedAdmin)),
+    };
+    siteSettingsModel = {
+      init: vi.fn().mockResolvedValue(undefined),
+      exists: vi.fn(() =>
+        createQuery(siteSettingsState ? { _id: 'singleton-id' } : null),
+      ),
+      findOne: vi.fn(() =>
+        createQuery(
+          siteSettingsState
+            ? createSiteSettingsDocument(siteSettingsState)
+            : null,
+        ),
+      ),
+      create: vi.fn(async (settings: SiteSettingsModel) => {
+        siteSettingsState = {
+          ...settings,
+          _id: 'internal-id',
+          __v: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        return createSiteSettingsDocument(siteSettingsState);
+      }),
+      findOneAndUpdate: vi.fn(
+        (
+          _filter: unknown,
+          update: { $set: Record<string, unknown> },
+        ) => {
+          if (!siteSettingsState) {
+            return createQuery(null);
+          }
+          siteSettingsState = applyDottedSet(
+            siteSettingsState,
+            update.$set,
+          );
+          return createQuery(
+            createSiteSettingsDocument(siteSettingsState),
+          );
+        },
+      ),
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -128,11 +246,13 @@ describe('AppController (e2e)', () => {
           JWT_SECRET: TEST_JWT_SECRET,
           CORS_ALLOWED_ORIGINS: ['http://localhost:3000'],
           LOGIN_RATE_LIMIT_MAX: 3,
-          LOGIN_RATE_LIMIT_TTL_MS: 100,
+          LOGIN_RATE_LIMIT_TTL_MS: 5_000,
         }),
       )
       .overrideProvider(getModelToken(ADMIN_USER_MODEL))
       .useValue(adminModel)
+      .overrideProvider(getModelToken(SITE_SETTINGS_MODEL))
+      .useValue(siteSettingsModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -322,13 +442,13 @@ describe('AppController (e2e)', () => {
       .send({ email: 'bad', password: '' })
       .expect(429);
 
-    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    await new Promise((resolve) => setTimeout(resolve, 5_100));
 
     await request(app!.getHttpServer())
       .post('/api/auth/login')
       .send({ email: 'bad', password: '' })
       .expect(400);
-  });
+  }, 10_000);
 
   it('applies configured CORS and security headers', async () => {
     const allowedOrigin = await request(app!.getHttpServer())
@@ -372,5 +492,201 @@ describe('AppController (e2e)', () => {
       await app.close();
       app = undefined;
     }
+  });
+
+  it('requires an authenticated admin for every settings management endpoint', async () => {
+    await request(app!.getHttpServer())
+      .get('/api/admin/site-settings')
+      .expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .send({ localization: { defaultLocale: 'en' } })
+      .expect(401);
+    await request(app!.getHttpServer())
+      .patch('/api/admin/site-settings')
+      .send({ identity: { name: { en: 'Updated' } } })
+      .expect(401);
+
+    const nonAdminToken = await createNonAdminToken();
+
+    await request(app!.getHttpServer())
+      .get('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+  });
+
+  it('rejects an editor-role JWT from creating site settings', async () => {
+    const nonAdminToken = await createNonAdminToken();
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .send({ localization: { defaultLocale: 'en' } })
+      .expect(401);
+  });
+
+  it('rejects an editor-role JWT from updating site settings', async () => {
+    const nonAdminToken = await createNonAdminToken();
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .send({ identity: { name: { en: 'Updated' } } })
+      .expect(401);
+  });
+
+  it('creates and retrieves the singleton settings without internal fields', async () => {
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+    const payload = {
+      identity: { name: { vi: 'Tên', en: 'Name' } },
+      contact: { socialLinks: { github: 'https://github.com/example' } },
+      localization: { defaultLocale: 'en' },
+      translations: { navigation: { home: { en: 'Home' } } },
+    };
+
+    const created = await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send(payload)
+      .expect(201);
+
+    expect(siteSettingsModel.init).toHaveBeenCalledOnce();
+    expect(siteSettingsModel.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: 'main',
+        localization: {
+          defaultLocale: 'en',
+          supportedLocales: ['vi', 'en', 'ja', 'ko'],
+        },
+      }),
+    );
+    expect(created.body).toMatchObject({
+      identity: { name: { vi: 'Tên', en: 'Name' } },
+      contact: { socialLinks: { github: 'https://github.com/example' } },
+      localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['vi', 'en', 'ja', 'ko'],
+      },
+      translations: { navigation: { home: { en: 'Home' } } },
+    });
+    expect(created.body).not.toHaveProperty('_id');
+    expect(created.body).not.toHaveProperty('key');
+    expect(created.body).not.toHaveProperty('__v');
+    expect(created.body).not.toHaveProperty('createdAt');
+    expect(created.body).not.toHaveProperty('updatedAt');
+
+    const retrieved = await request(app!.getHttpServer())
+      .get('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(retrieved.body).toEqual(created.body);
+  });
+
+  it('updates one locale without replacing other locales or publishing drafts', async () => {
+    siteSettingsState = {
+      key: 'main',
+      identity: { name: { vi: 'Tên cũ', en: 'Old name' } },
+      localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['vi', 'en', 'ja', 'ko'],
+      },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const updated = await request(app!.getHttpServer())
+      .patch('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ identity: { name: { en: 'New name' } } })
+      .expect(200);
+
+    expect(siteSettingsModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { key: 'main' },
+      { $set: { 'identity.name.en': 'New name' } },
+      { new: true, runValidators: true },
+    );
+    expect(updated.body.identity.name).toEqual({
+      vi: 'Tên cũ',
+      en: 'New name',
+    });
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ published: { en: { identity: { name: 'Published' } } } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ draft: { en: { identity: { name: 'Draft' } } } })
+      .expect(400);
+  });
+
+  it('rejects invalid DTO values and duplicate singleton creation', async () => {
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ localization: { defaultLocale: 'fr' } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ localization: { supportedLocales: ['vi', 'en', 'ja', 'ko'] } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        localization: { defaultLocale: 'en' },
+        _id: 'client-controlled-id',
+      })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        localization: { defaultLocale: 'en' },
+        translations: { navigation: { home: { en: 'Home', fr: 'Accueil' } } },
+      })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        localization: { defaultLocale: 'en' },
+        contact: { socialLinks: { '$set': 'unexpected' } },
+      })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ localization: { defaultLocale: 'en' } })
+      .expect(201);
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/site-settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ localization: { defaultLocale: 'en' } })
+      .expect(409);
   });
 });

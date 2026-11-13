@@ -5,6 +5,8 @@ import {
   SITE_SETTINGS_MODEL,
   SiteSettingsSchema,
 } from './site-settings.schema.js';
+import { SiteSettingsController } from './site-settings.controller.js';
+import { SiteSettingsService } from './site-settings.service.js';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import {
       },
     ]),
   ],
-  exports: [MongooseModule],
+  controllers: [SiteSettingsController],
+  providers: [SiteSettingsService],
+  exports: [MongooseModule, SiteSettingsService],
 })
 export class SiteSettingsModule {}
