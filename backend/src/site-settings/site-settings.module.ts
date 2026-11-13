@@ -9,6 +9,7 @@ import { SiteSettingsController } from './site-settings.controller.js';
 import { SiteSettingsService } from './site-settings.service.js';
 import { PublicSiteSettingsController } from './public-site-settings.controller.js';
 import { PublicSiteSettingsService } from './public-site-settings.service.js';
+import { PublicLocaleService } from './public-locale.service.js';
 
 @Module({
   imports: [
@@ -21,7 +22,11 @@ import { PublicSiteSettingsService } from './public-site-settings.service.js';
     ]),
   ],
   controllers: [SiteSettingsController, PublicSiteSettingsController],
-  providers: [SiteSettingsService, PublicSiteSettingsService],
-  exports: [MongooseModule, SiteSettingsService],
+  providers: [
+    SiteSettingsService,
+    PublicSiteSettingsService,
+    PublicLocaleService,
+  ],
+  exports: [MongooseModule, SiteSettingsService, PublicLocaleService],
 })
 export class SiteSettingsModule {}

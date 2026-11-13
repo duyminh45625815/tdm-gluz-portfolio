@@ -990,6 +990,179 @@ describe('AppController (e2e)', () => {
     }
   });
 
+  it('serves published public content with consistent locale fallback and visibility', async () => {
+    siteSettingsState = {
+      key: 'main',
+      localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['vi', 'en', 'ja', 'ko'],
+      },
+    };
+    pageState = {
+      slug: 'home',
+      draft: { vi: { hero: { title: 'Private draft' } } },
+      published: { en: { hero: { title: 'Published Home' } } },
+      _id: 'page-internal-id',
+      __v: 1,
+    };
+
+    const home = await request(app!.getHttpServer())
+      .get('/api/public/pages/home?locale=vi')
+      .expect(200);
+    expect(home.body).toEqual({
+      slug: 'home',
+      locale: 'en',
+      content: { hero: { title: 'Published Home' } },
+    });
+    expect(home.body).not.toHaveProperty('draft');
+    expect(home.body).not.toHaveProperty('_id');
+
+    pageState = {
+      slug: 'about',
+      draft: { vi: { story: { title: 'Private About draft' } } },
+      published: { en: { story: { title: 'Published About' } } },
+    };
+    const about = await request(app!.getHttpServer())
+      .get('/api/public/pages/about?locale=ja')
+      .expect(200);
+    expect(about.body).toEqual({
+      slug: 'about',
+      locale: 'en',
+      content: { story: { title: 'Published About' } },
+    });
+    await request(app!.getHttpServer())
+      .get('/api/public/pages/about?locale=fr')
+      .expect(400);
+
+    pageState = {
+      slug: 'about',
+      draft: { en: { story: { title: 'Draft only' } } },
+    };
+    await request(app!.getHttpServer())
+      .get('/api/public/pages/about')
+      .expect(404);
+
+    projectState = [
+      {
+        slug: 'visible-project',
+        category: 'academic',
+        displayOrder: 1,
+        presentations: { home: true, about: false },
+        draft: { vi: { title: 'Private project draft' } },
+        published: { en: { title: 'Published project' } },
+        links: { github: 'https://example.test/project' },
+        _id: 'project-internal-id',
+      },
+      {
+        slug: 'hidden-project',
+        category: 'personal',
+        displayOrder: 2,
+        presentations: { home: false, about: false },
+        published: { en: { title: 'Hidden project' } },
+      },
+      {
+        slug: 'unpublished-project',
+        category: 'other',
+        displayOrder: 3,
+        presentations: { home: true, about: false },
+        draft: { en: { title: 'Draft only' } },
+      },
+    ];
+    const projects = await request(app!.getHttpServer())
+      .get('/api/public/projects?locale=vi&presentation=home')
+      .expect(200);
+    expect(projects.body).toEqual([
+      {
+        slug: 'visible-project',
+        category: 'academic',
+        locale: 'en',
+        content: { title: 'Published project' },
+        links: { github: 'https://example.test/project' },
+        presentations: { home: true, about: false },
+        displayOrder: 1,
+      },
+    ]);
+    expect(projects.body[0]).not.toHaveProperty('draft');
+    await request(app!.getHttpServer())
+      .get('/api/public/projects/hidden-project?presentation=home')
+      .expect(404);
+    await request(app!.getHttpServer())
+      .get('/api/public/projects?presentation=invalid')
+      .expect(400);
+
+    skillGroupState = [
+      {
+        key: 'visible-skills',
+        displayOrder: 1,
+        presentations: { home: false, about: true },
+        draft: { vi: { about: { title: 'Private skill draft' } } },
+        published: { en: { about: { title: 'Published skills' } } },
+        _id: 'skill-internal-id',
+      },
+      {
+        key: 'hidden-skills',
+        displayOrder: 2,
+        presentations: { home: false, about: false },
+        published: { en: { home: { title: 'Hidden' } } },
+      },
+    ];
+    const skillGroups = await request(app!.getHttpServer())
+      .get('/api/public/skill-groups?locale=vi&presentation=about')
+      .expect(200);
+    expect(skillGroups.body).toEqual([
+      {
+        key: 'visible-skills',
+        locale: 'en',
+        content: { about: { title: 'Published skills' } },
+        presentations: { home: false, about: true },
+        displayOrder: 1,
+      },
+    ]);
+    expect(skillGroups.body[0]).not.toHaveProperty('draft');
+    await request(app!.getHttpServer())
+      .get('/api/public/skill-groups?locale=fr')
+      .expect(400);
+
+    educationState = [
+      {
+        _id: '507f1f77bcf86cd799439011',
+        type: 'university',
+        displayOrder: 1,
+        startDate: new Date('2020-01-01'),
+        endDate: new Date('2024-01-01'),
+        presentations: { home: true, about: false },
+        draft: { vi: { title: 'Private education draft' } },
+        published: { en: { title: 'Published education' } },
+        __v: 1,
+      },
+      {
+        _id: '507f1f77bcf86cd799439012',
+        type: 'course',
+        presentations: { home: false, about: false },
+        published: { en: { title: 'Hidden education' } },
+      },
+    ];
+    const education = await request(app!.getHttpServer())
+      .get('/api/public/education?locale=vi&presentation=home')
+      .expect(200);
+    expect(education.body).toEqual([
+      {
+        id: '507f1f77bcf86cd799439011',
+        type: 'university',
+        locale: 'en',
+        content: { title: 'Published education' },
+        startDate: '2020-01-01T00:00:00.000Z',
+        endDate: '2024-01-01T00:00:00.000Z',
+        presentations: { home: true, about: false },
+        displayOrder: 1,
+      },
+    ]);
+    expect(education.body[0]).not.toHaveProperty('draft');
+    await request(app!.getHttpServer())
+      .get('/api/public/education?presentation=other')
+      .expect(400);
+  });
+
   it('requires an authenticated admin for every settings management endpoint', async () => {
     await request(app!.getHttpServer())
       .get('/api/admin/site-settings')
