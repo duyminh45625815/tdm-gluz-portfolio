@@ -141,6 +141,18 @@ other locales remain intact. The existing Site Settings schema has no
 `draft`/`published` fields, so settings updates apply directly; no delete or
 publish endpoint is provided.
 
+## Home Page Admin API
+
+Authenticated administrators can manage the existing `home` document in the
+`pages` collection at `/api/admin/pages/home`. `GET` retrieves its localized
+draft and published versions, and `POST` initializes the singleton page.
+`PATCH /api/admin/pages/home/draft/:locale` partially updates the selected
+locale without publishing it. `POST /api/admin/pages/home/publish/:locale`
+publishes only that locale when it has a valid non-empty draft. Supported
+locales are `vi`, `en`, `ja`, and `ko`. Home content accepts the sections
+defined by `PageSchema`; featured projects continue to be selected through
+their existing `presentations.home` flags in the projects collection.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

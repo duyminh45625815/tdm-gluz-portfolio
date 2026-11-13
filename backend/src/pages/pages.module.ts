@@ -5,6 +5,8 @@ import {
   PAGE_MODEL,
   PageSchema,
 } from './page.schema.js';
+import { HomePageController } from './home-page.controller.js';
+import { HomePageService } from './home-page.service.js';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import {
       { name: PAGE_MODEL, schema: PageSchema, collection: PAGE_COLLECTION },
     ]),
   ],
-  exports: [MongooseModule],
+  controllers: [HomePageController],
+  providers: [HomePageService],
+  exports: [MongooseModule, HomePageService],
 })
 export class PagesModule {}

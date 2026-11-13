@@ -92,6 +92,21 @@ function createSiteSettingsDocument(settings: Record<string, unknown>) {
   };
 }
 
+function createPageDocument(page: Record<string, unknown>) {
+  return {
+    toObject: vi.fn(() => structuredClone(page)),
+  };
+}
+
+function readDottedValue(source: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce<unknown>((value, segment) => {
+    if (typeof value !== 'object' || value === null) {
+      return undefined;
+    }
+    return (value as Record<string, unknown>)[segment];
+  }, source);
+}
+
 function flattenTestValue(value: unknown): unknown {
   if (value instanceof Map) {
     return Object.fromEntries(
@@ -144,12 +159,80 @@ function applyDottedSet(
   return updated;
 }
 
+function createPageModelHarness(
+  getPage: () => Record<string, unknown> | null,
+  setPage: (page: Record<string, unknown> | null) => void,
+) {
+  function PageModel(
+    this: { validate: ReturnType<typeof vi.fn> },
+    _page: Record<string, unknown>,
+  ) {
+    this.validate = vi.fn().mockResolvedValue(undefined);
+  }
+
+  return Object.assign(PageModel, {
+    init: vi.fn().mockResolvedValue(undefined),
+    exists: vi.fn(() =>
+      createQuery(getPage() ? { _id: 'home-id' } : null),
+    ),
+    findOne: vi.fn(() => {
+      const page = getPage();
+      return createQuery(page ? createPageDocument(page) : null);
+    }),
+    create: vi.fn(async (page: Record<string, unknown>) => {
+      const created = {
+        ...page,
+        _id: 'home-id',
+        __v: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setPage(created);
+      return createPageDocument(created);
+    }),
+    findOneAndUpdate: vi.fn(
+      (
+        _filter: unknown,
+        update: unknown,
+      ) => {
+        const page = getPage();
+        if (!page) {
+          return createQuery(null);
+        }
+
+        let updates: Record<string, unknown>;
+        if (Array.isArray(update)) {
+          const setStage = update[0] as {
+            $set: Record<string, unknown>;
+          };
+          updates = Object.fromEntries(
+            Object.entries(setStage.$set).map(([path, value]) => [
+              path,
+              typeof value === 'string' && value.startsWith('$')
+                ? readDottedValue(page, value.slice(1))
+                : value,
+            ]),
+          );
+        } else {
+          updates = (update as { $set: Record<string, unknown> }).$set;
+        }
+
+        const updated = applyDottedSet(page, updates);
+        setPage(updated);
+        return createQuery(createPageDocument(updated));
+      },
+    ),
+  });
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App> | undefined;
   let admin: TestAdmin;
   let lookupAdmin: TestAdmin | null;
   let updatedAdmin: TestAdmin | null;
   let siteSettingsState: Record<string, unknown> | null;
+  let pageState: Record<string, unknown> | null;
+  let pageModel: ReturnType<typeof createPageModelHarness>;
   let adminModel: {
     findOne: ReturnType<typeof vi.fn>;
     findOneAndUpdate: ReturnType<typeof vi.fn>;
@@ -185,6 +268,13 @@ describe('AppController (e2e)', () => {
     lookupAdmin = admin;
     updatedAdmin = { ...admin, lastLoginAt: new Date() };
     siteSettingsState = null;
+    pageState = null;
+    pageModel = createPageModelHarness(
+      () => pageState,
+      (page) => {
+        pageState = page;
+      },
+    );
     adminModel = {
       findOne: vi.fn((filter: Record<string, unknown>) =>
         createQuery(
@@ -253,6 +343,8 @@ describe('AppController (e2e)', () => {
       .useValue(adminModel)
       .overrideProvider(getModelToken(SITE_SETTINGS_MODEL))
       .useValue(siteSettingsModel)
+      .overrideProvider(getModelToken(PAGE_MODEL))
+      .useValue(pageModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -688,5 +780,239 @@ describe('AppController (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ localization: { defaultLocale: 'en' } })
       .expect(409);
+  });
+
+  it('requires an admin JWT for Home Page management routes', async () => {
+    await request(app!.getHttpServer())
+      .get('/api/admin/pages/home')
+      .expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/home')
+      .expect(401);
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/en')
+      .send({ hero: { title: 'Updated' } })
+      .expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/home/publish/en')
+      .expect(401);
+
+    const nonAdminToken = await createNonAdminToken();
+    for (const [method, path, body] of [
+      ['get', '/api/admin/pages/home', undefined],
+      ['post', '/api/admin/pages/home', undefined],
+      ['patch', '/api/admin/pages/home/draft/en', { hero: { title: 'Updated' } }],
+      ['post', '/api/admin/pages/home/publish/en', undefined],
+    ] as const) {
+      const call = request(app!.getHttpServer())[method](path).set(
+        'Authorization',
+        `Bearer ${nonAdminToken}`,
+      );
+      if (body) {
+        call.send(body);
+      }
+      await call.expect(401);
+    }
+  });
+
+  it('retrieves Home Page draft and published locales without internal fields', async () => {
+    pageState = {
+      slug: 'home',
+      _id: 'internal-id',
+      __v: 2,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      draft: { vi: { hero: { title: 'Vietnamese draft' } } },
+      published: { en: { hero: { title: 'English published' } } },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const response = await request(app!.getHttpServer())
+      .get('/api/admin/pages/home')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(response.body).toEqual({
+      slug: 'home',
+      draft: { vi: { hero: { title: 'Vietnamese draft' } } },
+      published: { en: { hero: { title: 'English published' } } },
+    });
+    expect(response.body).not.toHaveProperty('_id');
+    expect(response.body).not.toHaveProperty('__v');
+    expect(response.body).not.toHaveProperty('createdAt');
+    expect(response.body).not.toHaveProperty('updatedAt');
+  });
+
+  it('initializes the singleton Home Page and rejects duplicate creation', async () => {
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const created = await request(app!.getHttpServer())
+      .post('/api/admin/pages/home')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(201);
+
+    expect(pageModel.init).toHaveBeenCalledOnce();
+    expect(pageModel.exists).toHaveBeenCalledWith({ slug: 'home' });
+    expect(pageModel.create).toHaveBeenCalledWith({ slug: 'home' });
+    expect(created.body).toEqual({ slug: 'home' });
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/home')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(409);
+  });
+
+  it('updates only supplied draft leaves and preserves other locales and publishing', async () => {
+    pageState = {
+      slug: 'home',
+      draft: {
+        vi: {
+          hero: {
+            title: 'Old title',
+            subtitle: 'Keep this subtitle',
+            primaryAction: { label: 'Old label', href: '/old' },
+          },
+        },
+        en: { hero: { title: 'English draft' } },
+      },
+      published: { en: { hero: { title: 'English published' } } },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const response = await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        hero: {
+          title: 'New title',
+          primaryAction: { label: 'New label' },
+        },
+      })
+      .expect(200);
+
+    expect(pageModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { slug: 'home' },
+      {
+        $set: {
+          'draft.vi.hero.title': 'New title',
+          'draft.vi.hero.primaryAction.label': 'New label',
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    expect(pageState?.draft).toEqual({
+      vi: {
+        hero: {
+          title: 'New title',
+          subtitle: 'Keep this subtitle',
+          primaryAction: { label: 'New label', href: '/old' },
+        },
+      },
+      en: { hero: { title: 'English draft' } },
+    });
+    expect(response.body.draft.vi.hero).toEqual({
+      title: 'New title',
+      subtitle: 'Keep this subtitle',
+      primaryAction: { label: 'New label', href: '/old' },
+    });
+    expect(response.body.draft.en).toEqual({
+      hero: { title: 'English draft' },
+    });
+    expect(response.body.published.en).toEqual({
+      hero: { title: 'English published' },
+    });
+  });
+
+  it('publishes only a valid draft locale and preserves other published locales', async () => {
+    pageState = {
+      slug: 'home',
+      draft: {
+        vi: { hero: { title: 'Vietnamese draft' } },
+        en: { hero: { title: 'English draft' } },
+      },
+      published: { en: { hero: { title: 'English published' } } },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const response = await request(app!.getHttpServer())
+      .post('/api/admin/pages/home/publish/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(pageModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { slug: 'home', 'draft.vi': { $type: 'object' } },
+      [{ $set: { 'published.vi': '$draft.vi' } }],
+      { new: true, updatePipeline: true },
+    );
+    expect(response.body.published).toEqual({
+      vi: { hero: { title: 'Vietnamese draft' } },
+      en: { hero: { title: 'English published' } },
+    });
+    expect(response.body.draft.en).toEqual({
+      hero: { title: 'English draft' },
+    });
+  });
+
+  it('rejects publishing without a valid draft and invalid Home Page DTOs', async () => {
+    pageState = {
+      slug: 'home',
+      draft: { en: { hero: { title: 'English draft' } } },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/home/publish/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(409);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/fr')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ hero: { title: 'Unsupported locale' } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ story: { title: 'About-only section' } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ hero: { primaryAction: { label: 'Go', unknown: 'field' } } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ highlights: { items: [{ label: 123 }] } })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/home/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ _id: 'client-controlled-id', hero: { title: 'Invalid' } })
+      .expect(400);
   });
 });
