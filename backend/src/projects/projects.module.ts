@@ -5,6 +5,8 @@ import {
   PROJECT_MODEL,
   ProjectSchema,
 } from './project.schema.js';
+import { ProjectAdminController } from './project-admin.controller.js';
+import { ProjectAdminService } from './project-admin.service.js';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import {
       },
     ]),
   ],
+  controllers: [ProjectAdminController],
+  providers: [ProjectAdminService],
   exports: [MongooseModule],
 })
 export class ProjectsModule {}

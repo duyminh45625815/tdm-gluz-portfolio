@@ -225,6 +225,109 @@ function createPageModelHarness(
   });
 }
 
+function createProjectModelHarness(
+  getProjects: () => Record<string, unknown>[],
+  setProjects: (projects: Record<string, unknown>[]) => void,
+) {
+  function ProjectModel(
+    this: { validate: ReturnType<typeof vi.fn> },
+    _project: Record<string, unknown>,
+  ) {
+    this.validate = vi.fn().mockResolvedValue(undefined);
+  }
+
+  function queryFor<T>(value: T) {
+    const query = createQuery(value);
+    return Object.assign(query, {
+      sort: vi.fn(() => query),
+    });
+  }
+
+  return Object.assign(ProjectModel, {
+    init: vi.fn().mockResolvedValue(undefined),
+    find: vi.fn(() =>
+      queryFor(getProjects().map((project) => createPageDocument(project))),
+    ),
+    findOne: vi.fn((filter: { slug: string }) =>
+      queryFor(
+        getProjects().find((project) => project.slug === filter.slug)
+          ? createPageDocument(
+              getProjects().find(
+                (project) => project.slug === filter.slug,
+              )!,
+            )
+          : null,
+      ),
+    ),
+    create: vi.fn(async (input: Record<string, unknown>) => {
+      if (getProjects().some((project) => project.slug === input.slug)) {
+        throw { code: 11000 };
+      }
+
+      const project = {
+        ...input,
+        _id: `project-${getProjects().length + 1}`,
+        __v: 0,
+        presentations: {
+          home: false,
+          about: false,
+          ...(input.presentations as Record<string, unknown> | undefined),
+        },
+        displayOrder:
+          typeof input.displayOrder === 'number' ? input.displayOrder : 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setProjects([...getProjects(), project]);
+      return createPageDocument(project);
+    }),
+    findOneAndUpdate: vi.fn(
+      (filter: { slug: string }, update: unknown) => {
+        const projects = getProjects();
+        const index = projects.findIndex(
+          (project) => project.slug === filter.slug,
+        );
+        if (index < 0) {
+          return queryFor(null);
+        }
+
+        const updates = Array.isArray(update)
+          ? Object.fromEntries(
+              Object.entries(
+                (update[0] as { $set: Record<string, unknown> }).$set,
+              ).map(([path, value]) => [
+                path,
+                typeof value === 'string' && value.startsWith('$')
+                  ? readDottedValue(projects[index], value.slice(1))
+                  : value,
+              ]),
+            )
+          : (update as { $set: Record<string, unknown> }).$set;
+        const updated = applyDottedSet(projects[index], updates);
+        setProjects(
+          projects.map((project, projectIndex) =>
+            projectIndex === index ? updated : project,
+          ),
+        );
+        return queryFor(createPageDocument(updated));
+      },
+    ),
+    findOneAndDelete: vi.fn((filter: { slug: string }) => {
+      const projects = getProjects();
+      const index = projects.findIndex(
+        (project) => project.slug === filter.slug,
+      );
+      if (index < 0) {
+        return queryFor(null);
+      }
+
+      const [deleted] = projects.splice(index, 1);
+      setProjects(projects);
+      return queryFor(createPageDocument(deleted));
+    }),
+  });
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App> | undefined;
   let admin: TestAdmin;
@@ -233,6 +336,8 @@ describe('AppController (e2e)', () => {
   let siteSettingsState: Record<string, unknown> | null;
   let pageState: Record<string, unknown> | null;
   let pageModel: ReturnType<typeof createPageModelHarness>;
+  let projectState: Record<string, unknown>[];
+  let projectModel: ReturnType<typeof createProjectModelHarness>;
   let adminModel: {
     findOne: ReturnType<typeof vi.fn>;
     findOneAndUpdate: ReturnType<typeof vi.fn>;
@@ -269,10 +374,17 @@ describe('AppController (e2e)', () => {
     updatedAdmin = { ...admin, lastLoginAt: new Date() };
     siteSettingsState = null;
     pageState = null;
+    projectState = [];
     pageModel = createPageModelHarness(
       () => pageState,
       (page) => {
         pageState = page;
+      },
+    );
+    projectModel = createProjectModelHarness(
+      () => projectState,
+      (projects) => {
+        projectState = projects;
       },
     );
     adminModel = {
@@ -345,6 +457,8 @@ describe('AppController (e2e)', () => {
       .useValue(siteSettingsModel)
       .overrideProvider(getModelToken(PAGE_MODEL))
       .useValue(pageModel)
+      .overrideProvider(getModelToken(PROJECT_MODEL))
+      .useValue(projectModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -1150,5 +1264,130 @@ describe('AppController (e2e)', () => {
       vi: { story: { title: 'New title', body: 'Keep this body' } },
       en: { story: { title: 'English published' } },
     });
+  });
+
+  it('requires an admin JWT for Project management routes', async () => {
+    await request(app!.getHttpServer()).get('/api/admin/projects').expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/projects')
+      .send({ slug: 'sample-project', category: 'academic' })
+      .expect(401);
+
+    const nonAdminToken = await createNonAdminToken();
+    await request(app!.getHttpServer())
+      .get('/api/admin/projects')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+    await request(app!.getHttpServer())
+      .delete('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${nonAdminToken}`)
+      .expect(401);
+  });
+
+  it('supports Project CRUD, localized drafts, publishing, and validation', async () => {
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const created = await request(app!.getHttpServer())
+      .post('/api/admin/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        slug: 'sample-project',
+        category: 'academic',
+        displayOrder: 2,
+        links: { github: 'https://example.test/repo', demo: '/demo' },
+        presentations: { home: true, about: false },
+      })
+      .expect(201);
+    expect(created.body).toMatchObject({
+      slug: 'sample-project',
+      category: 'academic',
+      displayOrder: 2,
+      links: { github: 'https://example.test/repo', demo: '/demo' },
+      presentations: { home: true, about: false },
+    });
+    expect(created.body).not.toHaveProperty('_id');
+    expect(created.body).not.toHaveProperty('__v');
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ slug: 'sample-project', category: 'academic' })
+      .expect(409);
+
+    await request(app!.getHttpServer())
+      .get('/api/admin/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toHaveLength(1);
+        expect(body[0].slug).toBe('sample-project');
+      });
+    await request(app!.getHttpServer())
+      .get('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const updated = await request(app!.getHttpServer())
+      .patch('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        displayOrder: 3,
+        presentations: { about: true },
+        links: { github: 'https://example.test/updated' },
+      })
+      .expect(200);
+    expect(updated.body.presentations).toEqual({ home: true, about: true });
+    expect(updated.body.links).toEqual({
+      github: 'https://example.test/updated',
+      demo: '/demo',
+    });
+
+    const draft = await request(app!.getHttpServer())
+      .patch('/api/admin/projects/sample-project/draft/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        title: 'Vietnamese draft',
+        deliverables: ['API'],
+      })
+      .expect(200);
+    expect(draft.body.draft.vi).toEqual({
+      title: 'Vietnamese draft',
+      deliverables: ['API'],
+    });
+
+    const published = await request(app!.getHttpServer())
+      .post('/api/admin/projects/sample-project/publish/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(published.body.published.vi).toEqual(draft.body.draft.vi);
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ presentations: { home: 'yes' } })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .patch('/api/admin/projects/sample-project/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'Known', unexpected: true })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .post('/api/admin/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ slug: 'Invalid Slug', category: 'academic' })
+      .expect(400);
+
+    await request(app!.getHttpServer())
+      .delete('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
+    await request(app!.getHttpServer())
+      .get('/api/admin/projects/sample-project')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
   });
 });
