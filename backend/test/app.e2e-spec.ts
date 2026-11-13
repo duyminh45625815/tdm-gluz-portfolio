@@ -917,6 +917,79 @@ describe('AppController (e2e)', () => {
     }
   });
 
+  it('serves only approved public site settings without authentication', async () => {
+    await request(app!.getHttpServer())
+      .get('/api/public/site-settings')
+      .expect(404);
+
+    siteSettingsState = {
+      key: 'main',
+      _id: 'internal-id',
+      __v: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      identity: {
+        name: { en: 'Portfolio' },
+        title: { en: 'Developer' },
+        tagline: { en: 'Building things' },
+      },
+      contact: {
+        email: 'hello@example.test',
+        phone: '+10000000000',
+        location: { en: 'Remote' },
+        socialLinks: { github: 'https://example.test/profile' },
+      },
+      localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['vi', 'en', 'ja', 'ko'],
+      },
+      translations: {
+        navigation: { home: { en: 'Home' } },
+        footer: { copyright: { en: 'Copyright' } },
+        shared: { contact: { en: 'Contact' } },
+      },
+      adminOnly: { accessToken: 'must-not-escape' },
+      passwordHash: 'must-not-escape',
+    };
+
+    const response = await request(app!.getHttpServer())
+      .get('/api/public/site-settings')
+      .expect(200);
+    expect(response.body).toEqual({
+      identity: {
+        name: { en: 'Portfolio' },
+        title: { en: 'Developer' },
+        tagline: { en: 'Building things' },
+      },
+      contact: {
+        email: 'hello@example.test',
+        phone: '+10000000000',
+        location: { en: 'Remote' },
+        socialLinks: { github: 'https://example.test/profile' },
+      },
+      localization: {
+        defaultLocale: 'en',
+        supportedLocales: ['vi', 'en', 'ja', 'ko'],
+      },
+      translations: {
+        navigation: { home: { en: 'Home' } },
+        footer: { copyright: { en: 'Copyright' } },
+        shared: { contact: { en: 'Contact' } },
+      },
+    });
+    for (const field of [
+      '_id',
+      '__v',
+      'key',
+      'createdAt',
+      'updatedAt',
+      'adminOnly',
+      'passwordHash',
+    ]) {
+      expect(response.body).not.toHaveProperty(field);
+    }
+  });
+
   it('requires an authenticated admin for every settings management endpoint', async () => {
     await request(app!.getHttpServer())
       .get('/api/admin/site-settings')

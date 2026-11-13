@@ -7,6 +7,8 @@ import {
 } from './site-settings.schema.js';
 import { SiteSettingsController } from './site-settings.controller.js';
 import { SiteSettingsService } from './site-settings.service.js';
+import { PublicSiteSettingsController } from './public-site-settings.controller.js';
+import { PublicSiteSettingsService } from './public-site-settings.service.js';
 
 @Module({
   imports: [
@@ -18,8 +20,8 @@ import { SiteSettingsService } from './site-settings.service.js';
       },
     ]),
   ],
-  controllers: [SiteSettingsController],
-  providers: [SiteSettingsService],
+  controllers: [SiteSettingsController, PublicSiteSettingsController],
+  providers: [SiteSettingsService, PublicSiteSettingsService],
   exports: [MongooseModule, SiteSettingsService],
 })
 export class SiteSettingsModule {}
