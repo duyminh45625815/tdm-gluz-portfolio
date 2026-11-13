@@ -1015,4 +1015,140 @@ describe('AppController (e2e)', () => {
       .send({ _id: 'client-controlled-id', hero: { title: 'Invalid' } })
       .expect(400);
   });
+
+  it('requires an admin JWT for About Page management routes', async () => {
+    await request(app!.getHttpServer())
+      .get('/api/admin/pages/about')
+      .expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/about')
+      .expect(401);
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/about/draft/en')
+      .send({ story: { title: 'Updated' } })
+      .expect(401);
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/about/publish/en')
+      .expect(401);
+
+    const nonAdminToken = await createNonAdminToken();
+    for (const [method, path, body] of [
+      ['get', '/api/admin/pages/about', undefined],
+      ['post', '/api/admin/pages/about', undefined],
+      [
+        'patch',
+        '/api/admin/pages/about/draft/en',
+        { story: { title: 'Updated' } },
+      ],
+      ['post', '/api/admin/pages/about/publish/en', undefined],
+    ] as const) {
+      const call = request(app!.getHttpServer())[method](path).set(
+        'Authorization',
+        `Bearer ${nonAdminToken}`,
+      );
+      if (body) {
+        call.send(body);
+      }
+      await call.expect(401);
+    }
+  });
+
+  it('retrieves and initializes the About Page singleton without internal fields', async () => {
+    pageState = {
+      slug: 'about',
+      _id: 'internal-id',
+      __v: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      draft: { vi: { story: { title: 'Vietnamese draft' } } },
+      published: { en: { story: { title: 'English published' } } },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const response = await request(app!.getHttpServer())
+      .get('/api/admin/pages/about')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(response.body).toEqual({
+      slug: 'about',
+      draft: { vi: { story: { title: 'Vietnamese draft' } } },
+      published: { en: { story: { title: 'English published' } } },
+    });
+    expect(response.body).not.toHaveProperty('_id');
+    expect(response.body).not.toHaveProperty('__v');
+    expect(response.body).not.toHaveProperty('createdAt');
+    expect(response.body).not.toHaveProperty('updatedAt');
+
+    pageState = null;
+    const created = await request(app!.getHttpServer())
+      .post('/api/admin/pages/about')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(201);
+    expect(pageModel.exists).toHaveBeenCalledWith({ slug: 'about' });
+    expect(pageModel.create).toHaveBeenCalledWith({ slug: 'about' });
+    expect(created.body).toEqual({ slug: 'about' });
+
+    await request(app!.getHttpServer())
+      .post('/api/admin/pages/about')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(409);
+  });
+
+  it('updates About drafts partially and publishes only the requested locale', async () => {
+    pageState = {
+      slug: 'about',
+      draft: {
+        vi: { story: { title: 'Old title', body: 'Keep this body' } },
+        en: { story: { title: 'English draft' } },
+      },
+      published: { en: { story: { title: 'English published' } } },
+    };
+    const jwtService = app!.get(JwtService, { strict: false });
+    const token = await jwtService.signAsync({
+      sub: admin._id.toString(),
+      role: 'admin',
+    });
+
+    const updated = await request(app!.getHttpServer())
+      .patch('/api/admin/pages/about/draft/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ story: { title: 'New title' } })
+      .expect(200);
+    expect(pageState?.draft).toEqual({
+      vi: { story: { title: 'New title', body: 'Keep this body' } },
+      en: { story: { title: 'English draft' } },
+    });
+    expect(updated.body.published.en).toEqual({
+      story: { title: 'English published' },
+    });
+
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/about/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ highlights: { title: 'Home-only section' } })
+      .expect(400);
+    await request(app!.getHttpServer())
+      .patch('/api/admin/pages/about/draft/en')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ story: { title: 123 } })
+      .expect(400);
+
+    const published = await request(app!.getHttpServer())
+      .post('/api/admin/pages/about/publish/vi')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(pageModel.findOneAndUpdate).toHaveBeenLastCalledWith(
+      { slug: 'about', 'draft.vi': { $type: 'object' } },
+      [{ $set: { 'published.vi': '$draft.vi' } }],
+      { new: true, updatePipeline: true },
+    );
+    expect(published.body.published).toEqual({
+      vi: { story: { title: 'New title', body: 'Keep this body' } },
+      en: { story: { title: 'English published' } },
+    });
+  });
 });
